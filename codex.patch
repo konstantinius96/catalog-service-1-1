@@ -1,1 +1,463 @@
+From 43bb186013013254f338a6b5cccaf05f97d7ee6c Mon Sep 17 00:00:00 2001
+From: Codex <codex@openai.com>
+Date: Fri, 6 Feb 2026 13:38:32 +0000
+Subject: [PATCH] Refine catalog service foundation
 
+---
+ TEST_COMMIT.md                                |  1 -
+ .../catalog/CatalogService11Application.java  | 13 -------
+ .../catalog/config/SecurityConfig.java        | 20 ----------
+ .../controller/AutoComponentController.java   | 37 -------------------
+ .../catalog/controller/HealthController.java  | 13 -------
+ .../domain/component/AutoComponent.java       | 26 -------------
+ .../domain/component/ComponentImage.java      |  8 ----
+ .../catalog/domain/favourite/Favourite.java   | 11 ------
+ .../catalog/domain/user/RoleType.java         |  6 ---
+ .../catalog/domain/user/User.java             |  9 -----
+ .../catalog/dto/AutoComponentDto.java         | 26 -------------
+ .../catalog/mapper/AutoComponentMapper.java   | 15 --------
+ .../catalog/service/AutoComponentService.java | 11 ------
+ .../service/AutoComponentServiceImpl.java     | 23 ------------
+ .../catalogservice/config/OpenApiConfig.java  | 21 +++++------
+ .../catalogservice/domain/CarComponent.java   | 18 ++++++++-
+ .../catalogservice/domain/Favorite.java       | 10 ++++-
+ src/main/resources/data.sql                   |  4 ++
+ 18 files changed, 39 insertions(+), 233 deletions(-)
+ delete mode 100644 TEST_COMMIT.md
+ delete mode 100644 src/main/java/ru/samsebemehanik/catalog/CatalogService11Application.java
+ delete mode 100644 src/main/java/ru/samsebemehanik/catalog/config/SecurityConfig.java
+ delete mode 100644 src/main/java/ru/samsebemehanik/catalog/controller/AutoComponentController.java
+ delete mode 100644 src/main/java/ru/samsebemehanik/catalog/controller/HealthController.java
+ delete mode 100644 src/main/java/ru/samsebemehanik/catalog/domain/component/AutoComponent.java
+ delete mode 100644 src/main/java/ru/samsebemehanik/catalog/domain/component/ComponentImage.java
+ delete mode 100644 src/main/java/ru/samsebemehanik/catalog/domain/favourite/Favourite.java
+ delete mode 100644 src/main/java/ru/samsebemehanik/catalog/domain/user/RoleType.java
+ delete mode 100644 src/main/java/ru/samsebemehanik/catalog/domain/user/User.java
+ delete mode 100644 src/main/java/ru/samsebemehanik/catalog/dto/AutoComponentDto.java
+ delete mode 100644 src/main/java/ru/samsebemehanik/catalog/mapper/AutoComponentMapper.java
+ delete mode 100644 src/main/java/ru/samsebemehanik/catalog/service/AutoComponentService.java
+ delete mode 100644 src/main/java/ru/samsebemehanik/catalog/service/AutoComponentServiceImpl.java
+ create mode 100644 src/main/resources/data.sql
+
+diff --git a/TEST_COMMIT.md b/TEST_COMMIT.md
+deleted file mode 100644
+index 4e6406a..0000000
+--- a/TEST_COMMIT.md
++++ /dev/null
+@@ -1 +0,0 @@
+-Second test commit to verify repository connection.
+diff --git a/src/main/java/ru/samsebemehanik/catalog/CatalogService11Application.java b/src/main/java/ru/samsebemehanik/catalog/CatalogService11Application.java
+deleted file mode 100644
+index 93e8ff1..0000000
+--- a/src/main/java/ru/samsebemehanik/catalog/CatalogService11Application.java
++++ /dev/null
+@@ -1,13 +0,0 @@
+-package ru.samsebemehanik.catalog;
+-
+-import org.springframework.boot.SpringApplication;
+-import org.springframework.boot.autoconfigure.SpringBootApplication;
+-
+-@SpringBootApplication
+-public class CatalogService11Application {
+-
+-    public static void main(String[] args) {
+-        SpringApplication.run(CatalogService11Application.class, args);
+-    }
+-
+-}
+diff --git a/src/main/java/ru/samsebemehanik/catalog/config/SecurityConfig.java b/src/main/java/ru/samsebemehanik/catalog/config/SecurityConfig.java
+deleted file mode 100644
+index c0af6d0..0000000
+--- a/src/main/java/ru/samsebemehanik/catalog/config/SecurityConfig.java
++++ /dev/null
+@@ -1,20 +0,0 @@
+-package ru.samsebemehanik.catalog.config;
+-
+-import org.springframework.context.annotation.Bean;
+-import org.springframework.context.annotation.Configuration;
+-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+-import org.springframework.security.web.SecurityFilterChain;
+-
+-@Configuration
+-public class SecurityConfig {
+-
+-    @Bean
+-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+-        http
+-                .csrf(csrf -> csrf.disable())
+-                .authorizeHttpRequests(auth -> auth
+-                        .anyRequest().permitAll()
+-                );
+-        return http.build();
+-    }
+-}
+diff --git a/src/main/java/ru/samsebemehanik/catalog/controller/AutoComponentController.java b/src/main/java/ru/samsebemehanik/catalog/controller/AutoComponentController.java
+deleted file mode 100644
+index dfadf3c..0000000
+--- a/src/main/java/ru/samsebemehanik/catalog/controller/AutoComponentController.java
++++ /dev/null
+@@ -1,37 +0,0 @@
+-package ru.samsebemehanik.catalog.controller;
+-
+-import org.springframework.web.bind.annotation.GetMapping;
+-import org.springframework.web.bind.annotation.PathVariable;
+-import org.springframework.web.bind.annotation.RestController;
+-
+-import java.util.List;
+-import java.util.Map;
+-
+-@RestController
+-public class AutoComponentController {
+-
+-    @GetMapping("/components")
+-    public List<Map<String, Object>> getAllComponents() {
+-        return List.of(
+-                Map.of(
+-                        "id", 1L,
+-                        "name", "Двигатель",
+-                        "description", "Основной силовой агрегат"
+-                ),
+-                Map.of(
+-                        "id", 2L,
+-                        "name", "Подвеска",
+-                        "description", "Система амортизации"
+-                )
+-        );
+-    }
+-
+-    @GetMapping("/components/{id}")
+-    public Map<String, Object> getComponentById(@PathVariable Long id) {
+-        return Map.of(
+-                "id", id,
+-                "name", "Двигатель",
+-                "description", "Подробное описание компонента"
+-        );
+-    }
+-}
+diff --git a/src/main/java/ru/samsebemehanik/catalog/controller/HealthController.java b/src/main/java/ru/samsebemehanik/catalog/controller/HealthController.java
+deleted file mode 100644
+index 270307e..0000000
+--- a/src/main/java/ru/samsebemehanik/catalog/controller/HealthController.java
++++ /dev/null
+@@ -1,13 +0,0 @@
+-package ru.samsebemehanik.catalog.controller;
+-
+-import org.springframework.web.bind.annotation.GetMapping;
+-import org.springframework.web.bind.annotation.RestController;
+-
+-@RestController
+-public class HealthController {
+-
+-    @GetMapping("/health")
+-    public String health() {
+-        return "OK";
+-    }
+-}
+diff --git a/src/main/java/ru/samsebemehanik/catalog/domain/component/AutoComponent.java b/src/main/java/ru/samsebemehanik/catalog/domain/component/AutoComponent.java
+deleted file mode 100644
+index 5c313c8..0000000
+--- a/src/main/java/ru/samsebemehanik/catalog/domain/component/AutoComponent.java
++++ /dev/null
+@@ -1,26 +0,0 @@
+-package ru.samsebemehanik.catalog.domain.component;
+-
+-public class AutoComponent {
+-
+-    private Long id;
+-    private String name;
+-    private String description;
+-
+-    public AutoComponent(Long id, String name, String description) {
+-        this.id = id;
+-        this.name = name;
+-        this.description = description;
+-    }
+-
+-    public Long getId() {
+-        return id;
+-    }
+-
+-    public String getName() {
+-        return name;
+-    }
+-
+-    public String getDescription() {
+-        return description;
+-    }
+-}
+diff --git a/src/main/java/ru/samsebemehanik/catalog/domain/component/ComponentImage.java b/src/main/java/ru/samsebemehanik/catalog/domain/component/ComponentImage.java
+deleted file mode 100644
+index 97b1da9..0000000
+--- a/src/main/java/ru/samsebemehanik/catalog/domain/component/ComponentImage.java
++++ /dev/null
+@@ -1,8 +0,0 @@
+-package ru.samsebemehanik.catalog.domain.component;
+-
+-public class ComponentImage {
+-
+-    private Long id;
+-    private String url;
+-    private String description;
+-}
+diff --git a/src/main/java/ru/samsebemehanik/catalog/domain/favourite/Favourite.java b/src/main/java/ru/samsebemehanik/catalog/domain/favourite/Favourite.java
+deleted file mode 100644
+index 01be5b6..0000000
+--- a/src/main/java/ru/samsebemehanik/catalog/domain/favourite/Favourite.java
++++ /dev/null
+@@ -1,11 +0,0 @@
+-package ru.samsebemehanik.catalog.domain.favourite;
+-
+-import java.time.LocalDateTime;
+-
+-public class Favourite {
+-
+-    private Long id;
+-    private Long userId;
+-    private Long autoComponentId;
+-    private LocalDateTime addedAt;
+-}
+diff --git a/src/main/java/ru/samsebemehanik/catalog/domain/user/RoleType.java b/src/main/java/ru/samsebemehanik/catalog/domain/user/RoleType.java
+deleted file mode 100644
+index 9a2999e..0000000
+--- a/src/main/java/ru/samsebemehanik/catalog/domain/user/RoleType.java
++++ /dev/null
+@@ -1,6 +0,0 @@
+-package ru.samsebemehanik.catalog.domain.user;
+-
+-public enum RoleType {
+-    USER,
+-    ADMIN
+-}
+diff --git a/src/main/java/ru/samsebemehanik/catalog/domain/user/User.java b/src/main/java/ru/samsebemehanik/catalog/domain/user/User.java
+deleted file mode 100644
+index 5b884ad..0000000
+--- a/src/main/java/ru/samsebemehanik/catalog/domain/user/User.java
++++ /dev/null
+@@ -1,9 +0,0 @@
+-package ru.samsebemehanik.catalog.domain.user;
+-
+-public class User {
+-
+-    private Long id;
+-    private String login;
+-    private String passwordHash;
+-    private RoleType role;
+-}
+diff --git a/src/main/java/ru/samsebemehanik/catalog/dto/AutoComponentDto.java b/src/main/java/ru/samsebemehanik/catalog/dto/AutoComponentDto.java
+deleted file mode 100644
+index e03c43a..0000000
+--- a/src/main/java/ru/samsebemehanik/catalog/dto/AutoComponentDto.java
++++ /dev/null
+@@ -1,26 +0,0 @@
+-package ru.samsebemehanik.catalog.dto;
+-
+public class AutoComponentDto {
+-
+-    private Long id;
+-    private String name;
+-    private String description;
+-
+-    public AutoComponentDto(Long id, String name, String description) {
+-        this.id = id;
+-        this.name = name;
+-        this.description = description;
+-    }
+-
+-    public Long getId() {
+-        return id;
+-    }
+-
+-    public String getName() {
+-        return name;
+-    }
+-
+-    public String getDescription() {
+-        return description;
+-    }
+-}
+diff --git a/src/main/java/ru/samsebemehanik/catalog/mapper/AutoComponentMapper.java b/src/main/java/ru/samsebemehanik/catalog/mapper/AutoComponentMapper.java
+deleted file mode 100644
+index 23f312e..0000000
+--- a/src/main/java/ru/samsebemehanik/catalog/mapper/AutoComponentMapper.java
++++ /dev/null
+@@ -1,15 +0,0 @@
+-package ru.samsebemehanik.catalog.mapper;
+-
+-import ru.samsebemehanik.catalog.domain.component.AutoComponent;
+-import ru.samsebemehanik.catalog.dto.AutoComponentDto;
+-
+-public class AutoComponentMapper {
+-
+-    public static AutoComponentDto toDto(AutoComponent component) {
+-        return new AutoComponentDto(
+-                component.getId(),
+-                component.getName(),
+-                component.getDescription()
+-        );
+-    }
+-}
+diff --git a/src/main/java/ru/samsebemehanik/catalog/service/AutoComponentService.java b/src/main/java/ru/samsebemehanik/catalog/service/AutoComponentService.java
+deleted file mode 100644
+index e32c8a6..0000000
+--- a/src/main/java/ru/samsebemehanik/catalog/service/AutoComponentService.java
++++ /dev/null
+@@ -1,11 +0,0 @@
+-package ru.samsebemehanik.catalog.service;
+-
+-import java.util.List;
+import java.util.Map;
+-
+public interface AutoComponentService {
+-
+    List<Map<String, Object>> getAll();
+-
+    Map<String, Object> getById(Long id);
+}
+diff --git a/src/main/java/ru/samsebemehanik/catalog/service/AutoComponentServiceImpl.java b/src/main/java/ru/samsebemehanik/catalog/service/AutoComponentServiceImpl.java
+deleted file mode 100644
+index 54d7326..0000000
+--- a/src/main/java/ru/samsebemehanik/catalog/service/AutoComponentServiceImpl.java
++++ /dev/null
+@@ -1,23 +0,0 @@
+package ru.samsebemehanik.catalog.service;
+-
+import org.springframework.stereotype.Service;
+-
+import java.util.List;
+import java.util.Map;
+-
+@Service
+public class AutoComponentServiceImpl implements AutoComponentService {
+-
+    @Override
+    public List<Map<String, Object>> getAll() {
+        return List.of(
+                Map.of("id", 1, "name", "Двигатель"),
+                Map.of("id", 2, "name", "Подвеска")
+        );
+    }
+-
+    @Override
+    public Map<String, Object> getById(Long id) {
+        return Map.of("id", id, "name", "Двигатель");
+    }
+}
+diff --git a/src/main/java/ru/samsebemehanik/catalogservice/config/OpenApiConfig.java b/src/main/java/ru/samsebemehanik/catalogservice/config/OpenApiConfig.java
+index 30d9931..6dc89dc 100644
+--- a/src/main/java/ru/samsebemehanik/catalogservice/config/OpenApiConfig.java
++++ b/src/main/java/ru/samsebemehanik/catalogservice/config/OpenApiConfig.java
+@@ -1,19 +1,16 @@
+ package ru.samsebemehanik.catalogservice.config;
+ 
+-import io.swagger.v3.oas.models.OpenAPI;
+-import io.swagger.v3.oas.models.info.Info;
+-import org.springframework.context.annotation.Bean;
++import io.swagger.v3.oas.annotations.OpenAPIDefinition;
++import io.swagger.v3.oas.annotations.info.Info;
+ import org.springframework.context.annotation.Configuration;
+ 
+ @Configuration
++@OpenAPIDefinition(
++        info = @Info(
++                title = "СамСебеМеханик Catalog API",
++                description = "API для базовых операций над автомобильными компонентами и избранным",
++                version = "v1"
++        )
++)
+ public class OpenApiConfig {
+-
+-    @Bean
+-    public OpenAPI catalogOpenApi() {
+-        return new OpenAPI()
+-                .info(new Info()
+-                        .title("SamSebeMechanik Catalog API")
+-                        .version("v1")
+-                        .description("Catalog service foundation for car components knowledge base."));
+-    }
+ }
+diff --git a/src/main/java/ru/samsebemehanik/catalogservice/domain/CarComponent.java b/src/main/java/ru/samsebemehanik/catalogservice/domain/CarComponent.java
+index a7e3449..31d5c30 100644
+--- a/src/main/java/ru/samsebemehanik/catalogservice/domain/CarComponent.java
++++ b/src/main/java/ru/samsebemehanik/catalogservice/domain/CarComponent.java
+@@ -5,6 +5,8 @@ import jakarta.persistence.Entity;
+ import jakarta.persistence.GeneratedValue;
+ import jakarta.persistence.GenerationType;
+ import jakarta.persistence.Id;
++import jakarta.persistence.PrePersist;
++import jakarta.persistence.PreUpdate;
+ import jakarta.persistence.Table;
+ import jakarta.persistence.Version;
+ import java.time.Instant;
+@@ -24,7 +26,7 @@ public class CarComponent {
+     private String description;
+ 
+     @Column(nullable = false, updatable = false)
+-    private Instant createdAt = Instant.now();
++    private Instant createdAt;
+ 
+     private Instant updatedAt;
+ 
+@@ -78,4 +80,18 @@ public class CarComponent {
+     public void setVersion(Long version) {
+         this.version = version;
+     }
++
++    @PrePersist
++    void onCreate() {
++        Instant now = Instant.now();
++        if (createdAt == null) {
++            createdAt = now;
++        }
++        updatedAt = now;
++    }
++
++    @PreUpdate
++    void onUpdate() {
++        updatedAt = Instant.now();
++    }
+ }
+diff --git a/src/main/java/ru/samsebemehanik/catalogservice/domain/Favorite.java b/src/main/java/ru/samsebemehanik/catalogservice/domain/Favorite.java
+index 30d3c86..7e5094d 100644
+--- a/src/main/java/ru/samsebemehanik/catalogservice/domain/Favorite.java
++++ b/src/main/java/ru/samsebemehanik/catalogservice/domain/Favorite.java
+@@ -5,6 +5,7 @@ import jakarta.persistence.Entity;
+ import jakarta.persistence.GeneratedValue;
+ import jakarta.persistence.GenerationType;
+ import jakarta.persistence.Id;
++import jakarta.persistence.PrePersist;
+ import jakarta.persistence.Table;
+ import jakarta.persistence.Version;
+ import java.time.Instant;
+@@ -21,7 +22,7 @@ public class Favorite {
+     private Long componentId;
+ 
+     @Column(nullable = false, updatable = false)
+-    private Instant createdAt = Instant.now();
++    private Instant createdAt;
+ 
+     @Version
+     private Long version;
+@@ -57,4 +58,11 @@ public class Favorite {
+     public void setVersion(Long version) {
+         this.version = version;
+     }
++
++    @PrePersist
++    void onCreate() {
++        if (createdAt == null) {
++            createdAt = Instant.now();
++        }
++    }
+ }
+diff --git a/src/main/resources/data.sql b/src/main/resources/data.sql
+new file mode 100644
+index 0000000..bd66655
+--- /dev/null
++++ b/src/main/resources/data.sql
+@@ -0,0 +1,4 @@
++INSERT INTO car_components (name, description, created_at, updated_at, version)
++VALUES
++  ('Двигатель', 'Основной силовой агрегат автомобиля', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 0),
++  ('Подвеска', 'Система амортизации и крепления колёс', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 0);
+-- 
+2.43.0
