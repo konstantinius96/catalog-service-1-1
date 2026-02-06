@@ -21,10 +21,8 @@ import jakarta.persistence.Version;
 
     @Column(nullable = false, length = 2000)
      private String description;
- 
-    public AutoComponent(Long id, String name, String description) {
-        this.id = id;
-    @Version
+
+  @Version
     private Long version;
 
     protected AutoComponent() {
