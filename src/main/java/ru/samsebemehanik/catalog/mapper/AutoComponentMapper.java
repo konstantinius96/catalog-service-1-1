@@ -9,7 +9,8 @@ public class AutoComponentMapper {
         return new AutoComponentDto(
                 component.getId(),
                 component.getName(),
-                component.getDescription()
+                component.getDescription(),
+                component.getVersion()
         );
     }
 }
