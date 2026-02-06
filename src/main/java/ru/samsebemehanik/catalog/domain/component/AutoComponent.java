@@ -1,26 +1,53 @@
-package ru.samsebemehanik.catalog.domain.component;
+ package ru.samsebemehanik.catalog.domain.component;
+ 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 
-public class AutoComponent {
+@Entity
+@Table(name = "auto_components")
+ public class AutoComponent {
+ 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+     private Long id;
 
-    private Long id;
-    private String name;
-    private String description;
+    @Column(nullable = false, length = 200)
+     private String name;
 
+    @Column(nullable = false, length = 2000)
+     private String description;
+ 
     public AutoComponent(Long id, String name, String description) {
         this.id = id;
-        this.name = name;
-        this.description = description;
+    @Version
+    private Long version;
+
+    protected AutoComponent() {
     }
 
-    public Long getId() {
-        return id;
-    }
+    public AutoComponent(String name, String description) {
+         this.name = name;
+         this.description = description;
+     }
+ 
+     public Long getId() {
+         return id;
+     }
+ 
+     public String getName() {
+         return name;
+     }
+ 
+     public String getDescription() {
+         return description;
+     }
 
-    public String getName() {
-        return name;
+    public Long getVersion() {
+        return version;
     }
-
-    public String getDescription() {
-        return description;
-    }
-}
+ }
