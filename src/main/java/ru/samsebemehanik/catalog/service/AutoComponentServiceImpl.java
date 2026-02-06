@@ -8,7 +8,6 @@ import ru.samsebemehanik.catalog.mapper.AutoComponentMapper;
 import ru.samsebemehanik.catalog.repository.AutoComponentRepository;
  
  import java.util.List;
-import java.util.Map;
  
  @Service
  public class AutoComponentServiceImpl implements AutoComponentService {
@@ -20,11 +19,7 @@ import java.util.Map;
     }
 
      @Override
-    public List<Map<String, Object>> getAll() {
-        return List.of(
-                Map.of("id", 1, "name", "Двигатель"),
-                Map.of("id", 2, "name", "Подвеска")
-        );
+
     public List<AutoComponentDto> getAll() {
         return autoComponentRepository.findAll().stream()
                 .map(AutoComponentMapper::toDto)
@@ -32,8 +27,7 @@ import java.util.Map;
      }
  
      @Override
-    public Map<String, Object> getById(Long id) {
-        return Map.of("id", id, "name", "Двигатель");
+
     public AutoComponentDto getById(Long id) {
         return autoComponentRepository.findById(id)
                 .map(AutoComponentMapper::toDto)
