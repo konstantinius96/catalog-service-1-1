@@ -24,7 +24,6 @@ import ru.samsebemehanik.catalog.domain.component.AutoComponent;
 
     @Column(nullable = false)
      private Long userId;
-    private Long autoComponentId;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "auto_component_id", nullable = false)
