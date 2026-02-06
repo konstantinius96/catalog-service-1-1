@@ -31,6 +31,6 @@ import ru.samsebemehanik.catalog.repository.AutoComponentRepository;
     public AutoComponentDto getById(Long id) {
         return autoComponentRepository.findById(id)
                 .map(AutoComponentMapper::toDto)
-                .orElseThrow(() > new ResponseStatusException(HttpStatus.NOT_FOUND, "Компонент не найден"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Компонент не найден"));
      }
  }
