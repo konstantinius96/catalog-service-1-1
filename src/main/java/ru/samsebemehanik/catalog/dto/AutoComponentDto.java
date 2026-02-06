@@ -6,8 +6,7 @@
      private String name;
      private String description;
     private Long version;
- 
-    public AutoComponentDto(Long id, String name, String description) {
+
     public AutoComponentDto(Long id, String name, String description, Long version) {
          this.id = id;
          this.name = name;
