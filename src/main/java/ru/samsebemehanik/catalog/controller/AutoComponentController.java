@@ -6,7 +6,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ru.samsebemehanik.catalog.dto.AutoComponentDto;
 import ru.samsebemehanik.catalog.service.AutoComponentService;
-<<<<<<< HEAD
 
 import java.util.List;
 import java.util.Map;
@@ -30,7 +29,7 @@ public class AutoComponentController {
                 )
         );
 private final AutoComponentService autoComponentService;
-=======
+
  
  import java.util.List;
  
@@ -40,13 +39,13 @@ private final AutoComponentService autoComponentService;
  
 
     private final AutoComponentService autoComponentService;
->>>>>>> ef23793a633a73476c4fec63cfb74035d845ca97
+
 
     public AutoComponentController(AutoComponentService autoComponentService) {
             this.autoComponentService = autoComponentService;
         }
 
-<<<<<<< HEAD
+
         @GetMapping
         public List<AutoComponentDto> getAllComponents() {
             return autoComponentService.getAll();
@@ -64,7 +63,7 @@ private final AutoComponentService autoComponentService;
                 return autoComponentService.getById(id);
             }
         }
-=======
+
     @GetMapping
     public List<AutoComponentDto> getAllComponents() {
         return autoComponentService.getAll();
@@ -75,4 +74,3 @@ private final AutoComponentService autoComponentService;
         return autoComponentService.getById(id);
      }
  }
->>>>>>> ef23793a633a73476c4fec63cfb74035d845ca97
