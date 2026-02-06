@@ -1,15 +1,19 @@
-package ru.samsebemehanik.catalog.controller;
-
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
+ package ru.samsebemehanik.catalog.controller;
+ 
+ import org.springframework.web.bind.annotation.GetMapping;
+ import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+ import org.springframework.web.bind.annotation.RestController;
+import ru.samsebemehanik.catalog.dto.AutoComponentDto;
+import ru.samsebemehanik.catalog.service.AutoComponentService;
+ 
+ import java.util.List;
 import java.util.Map;
-
-@RestController
-public class AutoComponentController {
-
+ 
+ @RestController
+@RequestMapping("/components")
+ public class AutoComponentController {
+ 
     @GetMapping("/components")
     public List<Map<String, Object>> getAllComponents() {
         return List.of(
@@ -24,8 +28,17 @@ public class AutoComponentController {
                         "description", "Система амортизации"
                 )
         );
+    private final AutoComponentService autoComponentService;
+
+    public AutoComponentController(AutoComponentService autoComponentService) {
+        this.autoComponentService = autoComponentService;
     }
 
+    @GetMapping
+    public List<AutoComponentDto> getAllComponents() {
+        return autoComponentService.getAll();
+     }
+ 
     @GetMapping("/components/{id}")
     public Map<String, Object> getComponentById(@PathVariable Long id) {
         return Map.of(
@@ -33,5 +46,8 @@ public class AutoComponentController {
                 "name", "Двигатель",
                 "description", "Подробное описание компонента"
         );
-    }
-}
+    @GetMapping("/{id}")
+    public AutoComponentDto getComponentById(@PathVariable Long id) {
+        return autoComponentService.getById(id);
+     }
+ }
