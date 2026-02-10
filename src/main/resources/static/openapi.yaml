@@ -1,1 +1,104 @@
+openapi: 3.0.3
+info: 
+    title: SamSebeMehanik
+    description: API для проекта
+    version: 1.0.0
+    contact:
+        name: Project
+        email: email@email.email
+    license:
+        name: MIT
+servers: 
+    - url: http://localhost:8080
+paths: 
+    /api/v1/autocomponents:
+        post:
+            summary: Создать компонент с уникальным id
+            tags: [компонент]
+            security: 
+                - bearerAuth: []
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/ComponentCreateRequest'
+                        example:
+                          "name": "Двигатель",
+                          "description": "Сердце автомобиля. Преобразует химическую энергию топлива (бензина, дизеля, газа) в механическую работу путём его сжигания непосредственно внутри рабочих цилиндров",
+                          "specification": "Смесь топлива и воздуха сгорает внутри цилиндров, создавая высокое давление, которое толкает поршень, а тот вращает коленвал",
+                          "specification_jsonB": null
+            responses:
+                '201':
+                    description: Компонент создан
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ComponentCreateResponse' 
+                '400':
+                    description: Ошибка валидации
+                    content:
+                        application/json:
+                            schema:
+                               '#/components/schemas/ComponentErrorResponse' 
+                '409':
+                    description: Конфликт (компонент с таким name уже существует)
+                    content:
+                        application/json:
+                            schema:
+                               $ref: '#/components/schemas/ComponentErrorResponse'
+                '500':
+                    description: Внутренняя ошибка сервера
+                    content:
+                        application/json:
+                            schema:
+                               $ref: '#/components/schemas/ComponentErrorResponse'                            
+components:
+    schemas:
+        ComponentCreateRequest:
+            type: object
+            required: [name]
+            properties:
+                name:
+                    type: string
+                    minLength: 2
+                description:
+                    type: string
+                specification:
+                    type: string
+                specification_jsonB:
+                    type: object
+                    additionalProperties: true
+        ComponentCreateResponse:
+            type: object
+            properties:
+                id:
+                    type: string
+                    format: uuid
+                    readOnly: true
+                name:
+                    type: string
+                description:
+                    type: string
+                specification:
+                    type: string
+                specification_jsonB:
+                    type: object
+                    additionalProperties: true
+        ComponentErrorResponse:
+            type: object
+            properties:
+                code: 
+                    type: string
+                message:
+                    type: string
+                details:
+                    type: array
+                    items:
+                        type: string
+    securitySchemes:
+        bearerAuth:
+            type: http
+            scheme: bearer
+            bearerFormat: jwt
 
