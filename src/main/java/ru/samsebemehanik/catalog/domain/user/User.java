@@ -28,14 +28,11 @@ import java.time.LocalDateTime;
 
     @JsonProperty("registration_date")
     @Column(name = "registration_date", nullable = false)
-    private LocalDateTime registrationDate;
+     private LocalDateTime registrationDate;
   
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 30)
      private RoleType role;
-
-    @Version
-    private Long version;
 
     protected User() {
     }
