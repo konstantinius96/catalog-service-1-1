@@ -1,6 +1,8 @@
 package ru.samsebemehanik.catalog.config;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
@@ -13,12 +15,26 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.springframework.lang.Nullable;
 import org.springframework.web.servlet.HandlerMapping;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.web.servlet.resource.PathResourceResolver;
 
 @Configuration
-public class SwaggerDiagnosticsConfig {
+public class SwaggerDiagnosticsConfig implements WebMvcConfigurer {
 
     private static final Logger log = LoggerFactory.getLogger(SwaggerDiagnosticsConfig.class);
+
+    @Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        List<String> swaggerVersions = detectSwaggerUiVersions();
+
+        registry.addResourceHandler("/swagger-ui/**")
+            .addResourceLocations("classpath:/META-INF/resources/webjars/swagger-ui/")
+            .resourceChain(false)
+            .addResolver(new VersionedSwaggerUiResolver(swaggerVersions));
+    }
 
     @Bean
     public ApplicationRunner swaggerDiagnosticsRunner(
@@ -65,6 +81,30 @@ public class SwaggerDiagnosticsConfig {
         };
     }
 
+    private List<String> detectSwaggerUiVersions() {
+        Resource[] versionedSwaggerIndexes = findResources("classpath*:/META-INF/resources/webjars/swagger-ui/*/index.html");
+        List<String> versions = new ArrayList<>();
+
+        for (Resource resource : versionedSwaggerIndexes) {
+            String description = safeDescription(resource);
+            String marker = "/META-INF/resources/webjars/swagger-ui/";
+            int start = description.indexOf(marker);
+            if (start < 0) {
+                continue;
+            }
+            String tail = description.substring(start + marker.length());
+            int end = tail.indexOf('/');
+            if (end > 0) {
+                String version = tail.substring(0, end);
+                if (!versions.contains(version)) {
+                    versions.add(version);
+                }
+            }
+        }
+
+        return versions;
+    }
+
     private Resource[] findResources(String pattern) {
         try {
             return new PathMatchingResourcePatternResolver().getResources(pattern);
@@ -88,6 +128,34 @@ public class SwaggerDiagnosticsConfig {
             return true;
         } catch (ClassNotFoundException ignored) {
             return false;
+        }
+    }
+
+    private static final class VersionedSwaggerUiResolver extends PathResourceResolver {
+
+        private final List<String> versions;
+
+        private VersionedSwaggerUiResolver(List<String> versions) {
+            this.versions = versions;
+        }
+
+        @Override
+        @Nullable
+        protected Resource getResource(String resourcePath, Resource location) throws IOException {
+            Resource direct = location.createRelative(resourcePath);
+            if (direct.exists() && direct.isReadable()) {
+                return direct;
+            }
+
+            String normalized = resourcePath.startsWith("/") ? resourcePath.substring(1) : resourcePath;
+            for (String version : versions) {
+                Resource candidate = location.createRelative(version + "/" + normalized);
+                if (candidate.exists() && candidate.isReadable()) {
+                    return candidate;
+                }
+            }
+
+            return null;
         }
     }
 }
