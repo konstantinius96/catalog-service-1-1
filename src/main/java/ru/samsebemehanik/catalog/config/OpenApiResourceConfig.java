@@ -11,5 +11,11 @@ public class OpenApiResourceConfig implements WebMvcConfigurer {
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         registry.addResourceHandler("/openapi.yaml")
             .addResourceLocations("classpath:/");
+
+        registry.addResourceHandler("/webjars/**")
+            .addResourceLocations("classpath:/META-INF/resources/webjars/");
+
+        registry.addResourceHandler("/swagger-ui/**")
+            .addResourceLocations("classpath:/META-INF/resources/");
     }
 }
