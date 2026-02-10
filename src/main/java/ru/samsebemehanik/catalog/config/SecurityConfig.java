@@ -18,6 +18,7 @@ public class SecurityConfig {
                     "/openapi.yaml",
                     "/swagger-ui/**",
                     "/swagger-ui.html",
+                    "/webjars/**",
                     "/v3/api-docs/**"
                 ).permitAll()
 
