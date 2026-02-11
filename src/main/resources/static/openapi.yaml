@@ -41,12 +41,6 @@ paths:
                         application/json:
                             schema:
                                $ref: '#/components/schemas/ComponentErrorResponse' 
-                '409':
-                    description: Конфликт (компонент с таким name уже существует)
-                    content:
-                        application/json:
-                            schema:
-                               $ref: '#/components/schemas/ComponentErrorResponse'
                 '500':
                     description: Внутренняя ошибка сервера
                     content:
