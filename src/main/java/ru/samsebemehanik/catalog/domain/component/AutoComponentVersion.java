@@ -2,6 +2,7 @@ package ru.samsebemehanik.catalog.domain.component;
 
 import java.time.Instant;
 import java.util.Map;
+import java.util.UUID;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -11,13 +12,13 @@ public class AutoComponentVersion {
 
     @Id
     private String id;
-    private Long componentId;
+    private UUID componentId;
     private Long versionNumber;
     private Instant changedAt;
     private Long changedBy;
     private Snapshot snapshot;
 
-    public AutoComponentVersion(Long componentId,
+    public AutoComponentVersion(UUID componentId,
                                 Long versionNumber,
                                 Instant changedAt,
                                 Long changedBy,
@@ -36,7 +37,7 @@ public class AutoComponentVersion {
         return id;
     }
 
-    public Long getComponentId() {
+    public UUID getComponentId() {
         return componentId;
     }
 

@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 import java.util.UUID;
 
-public class AutoComponentDto {
+public class ComponentCreateResponse {
 
     private UUID id;
     private String name;
@@ -15,7 +15,7 @@ public class AutoComponentDto {
     @JsonProperty("specification_jsonB")
     private JsonNode specificationJsonB;
 
-    public AutoComponentDto(UUID id, String name, String description, String specification, JsonNode specificationJsonB) {
+    public ComponentCreateResponse(UUID id, String name, String description, String specification, JsonNode specificationJsonB) {
         this.id = id;
         this.name = name;
         this.description = description;

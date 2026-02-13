@@ -2,12 +2,11 @@ package ru.samsebemehanik.catalog.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
+import jakarta.validation.constraints.NotNull;
 
-import java.util.UUID;
+public class ComponentCreateRequest {
 
-public class AutoComponentDto {
-
-    private UUID id;
+    @NotNull
     private String name;
     private String description;
     private String specification;
@@ -15,16 +14,7 @@ public class AutoComponentDto {
     @JsonProperty("specification_jsonB")
     private JsonNode specificationJsonB;
 
-    public AutoComponentDto(UUID id, String name, String description, String specification, JsonNode specificationJsonB) {
-        this.id = id;
-        this.name = name;
-        this.description = description;
-        this.specification = specification;
-        this.specificationJsonB = specificationJsonB;
-    }
-
-    public UUID getId() {
-        return id;
+    public ComponentCreateRequest() {
     }
 
     public String getName() {
