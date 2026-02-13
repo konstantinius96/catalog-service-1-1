@@ -1,16 +1,18 @@
 package ru.samsebemehanik.catalog.controller;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import ru.samsebemehanik.catalog.dto.AutoComponentDto;
+import ru.samsebemehanik.catalog.dto.ComponentCreateRequest;
+import ru.samsebemehanik.catalog.dto.ComponentCreateResponse;
 import ru.samsebemehanik.catalog.service.AutoComponentService;
 
-import java.util.List;
-
 @RestController
-@RequestMapping("/components")
+@RequestMapping("/api/v1/autocomponents")
 public class AutoComponentController {
 
     private final AutoComponentService autoComponentService;
@@ -19,13 +21,9 @@ public class AutoComponentController {
         this.autoComponentService = autoComponentService;
     }
 
-    @GetMapping
-    public List<AutoComponentDto> getAllComponents() {
-        return autoComponentService.getAll();
-    }
-
-    @GetMapping("/{id}")
-    public AutoComponentDto getComponentById(@PathVariable Long id) {
-        return autoComponentService.getById(id);
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    public ComponentCreateResponse create(@Valid @RequestBody ComponentCreateRequest request) {
+        return autoComponentService.create(request);
     }
 }

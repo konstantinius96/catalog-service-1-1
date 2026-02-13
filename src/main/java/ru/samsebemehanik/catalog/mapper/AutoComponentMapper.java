@@ -2,6 +2,7 @@ package ru.samsebemehanik.catalog.mapper;
 
 import ru.samsebemehanik.catalog.domain.component.AutoComponent;
 import ru.samsebemehanik.catalog.dto.AutoComponentDto;
+import ru.samsebemehanik.catalog.dto.ComponentCreateResponse;
 
 public class AutoComponentMapper {
 
@@ -10,7 +11,18 @@ public class AutoComponentMapper {
                 component.getId(),
                 component.getName(),
                 component.getDescription(),
-                component.getVersion()
+                component.getSpecification(),
+                component.getSpecificationJsonB()
+        );
+    }
+
+    public static ComponentCreateResponse toCreateResponse(AutoComponent component) {
+        return new ComponentCreateResponse(
+                component.getId(),
+                component.getName(),
+                component.getDescription(),
+                component.getSpecification(),
+                component.getSpecificationJsonB()
         );
     }
 }
