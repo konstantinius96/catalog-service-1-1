@@ -1,36 +1,33 @@
 package ru.samsebemehanik.catalog.service;
- 
-import org.springframework.http.HttpStatus;
- import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
-import ru.samsebemehanik.catalog.dto.AutoComponentDto;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import ru.samsebemehanik.catalog.domain.component.AutoComponent;
+import ru.samsebemehanik.catalog.dto.ComponentCreateRequest;
+import ru.samsebemehanik.catalog.dto.ComponentCreateResponse;
 import ru.samsebemehanik.catalog.mapper.AutoComponentMapper;
 import ru.samsebemehanik.catalog.repository.AutoComponentRepository;
- 
- import java.util.List;
- 
- @Service
- public class AutoComponentServiceImpl implements AutoComponentService {
- 
+
+@Service
+public class AutoComponentServiceImpl implements AutoComponentService {
+
     private final AutoComponentRepository autoComponentRepository;
 
     public AutoComponentServiceImpl(AutoComponentRepository autoComponentRepository) {
         this.autoComponentRepository = autoComponentRepository;
     }
 
-     @Override
+    @Override
+    @Transactional
+    public ComponentCreateResponse create(ComponentCreateRequest request) {
+        AutoComponent component = new AutoComponent(
+                request.getName(),
+                request.getDescription(),
+                request.getSpecification(),
+                request.getSpecificationJsonB()
+        );
 
-    public List<AutoComponentDto> getAll() {
-        return autoComponentRepository.findAll().stream()
-                .map(AutoComponentMapper::toDto)
-                .toList();
-     }
- 
-     @Override
-
-    public AutoComponentDto getById(Long id) {
-        return autoComponentRepository.findById(id)
-                .map(AutoComponentMapper::toDto)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Компонент не найден"));
-     }
- }
+        AutoComponent saved = autoComponentRepository.save(component);
+        return AutoComponentMapper.toCreateResponse(saved);
+    }
+}

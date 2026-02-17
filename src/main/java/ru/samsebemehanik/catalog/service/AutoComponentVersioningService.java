@@ -1,9 +1,7 @@
 package ru.samsebemehanik.catalog.service;
 
-import java.time.Instant;
-import java.util.Map;
-import java.util.Objects;
-
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.samsebemehanik.catalog.domain.component.AutoComponent;
@@ -11,20 +9,28 @@ import ru.samsebemehanik.catalog.domain.component.AutoComponentVersion;
 import ru.samsebemehanik.catalog.repository.AutoComponentRepository;
 import ru.samsebemehanik.catalog.repository.AutoComponentVersionRepository;
 
+import java.time.Instant;
+import java.util.Map;
+import java.util.Objects;
+import java.util.UUID;
+
 @Service
 public class AutoComponentVersioningService {
 
     private final AutoComponentRepository autoComponentRepository;
     private final AutoComponentVersionRepository autoComponentVersionRepository;
+    private final ObjectMapper objectMapper;
 
     public AutoComponentVersioningService(AutoComponentRepository autoComponentRepository,
-                                          AutoComponentVersionRepository autoComponentVersionRepository) {
+                                          AutoComponentVersionRepository autoComponentVersionRepository,
+                                          ObjectMapper objectMapper) {
         this.autoComponentRepository = autoComponentRepository;
         this.autoComponentVersionRepository = autoComponentVersionRepository;
+        this.objectMapper = objectMapper;
     }
 
     @Transactional
-    public AutoComponent updateComponent(Long componentId,
+    public AutoComponent updateComponent(UUID componentId,
                                          String description,
                                          String specification,
                                          Map<String, Object> specificationJsonb,
@@ -34,15 +40,20 @@ public class AutoComponentVersioningService {
 
         boolean descriptionChanged = !Objects.equals(component.getDescription(), description);
         boolean specificationChanged = !Objects.equals(component.getSpecification(), specification)
-                || !Objects.equals(component.getSpecificationJsonb(), specificationJsonb);
+                || !Objects.equals(component.getSpecificationJsonB(), objectMapper.valueToTree(specificationJsonb));
 
         if (!descriptionChanged && !specificationChanged) {
             return component;
         }
 
+        Map<String, Object> currentJson = component.getSpecificationJsonB() == null
+                ? null
+                : objectMapper.convertValue(component.getSpecificationJsonB(), new TypeReference<>() {
+                });
+
         AutoComponentVersion.Snapshot snapshot = new AutoComponentVersion.Snapshot(
                 component.getDescription(),
-                component.getSpecificationJsonb() == null ? null : Map.copyOf(component.getSpecificationJsonb()));
+                currentJson == null ? null : Map.copyOf(currentJson));
 
         long nextVersion = autoComponentVersionRepository
                 .findTopByComponentIdOrderByVersionNumberDesc(componentId)
@@ -59,7 +70,7 @@ public class AutoComponentVersioningService {
 
         component.setDescription(description);
         component.setSpecification(specification);
-        component.setSpecificationJsonb(specificationJsonb);
+        component.setSpecificationJsonB(objectMapper.valueToTree(specificationJsonb));
 
         return autoComponentRepository.save(component);
     }

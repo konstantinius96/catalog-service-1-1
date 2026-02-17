@@ -1,52 +1,50 @@
 package ru.samsebemehanik.catalog.domain.component;
 
-import java.util.Map;
-
+import com.fasterxml.jackson.databind.JsonNode;
+import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import jakarta.persistence.Version;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
+import org.hibernate.annotations.Type;
+
+import java.util.UUID;
 
 @Entity
-@Table(name = "auto_components")
+@Table(name = "auto_component")
 public class AutoComponent {
- 
+
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(columnDefinition = "UUID", updatable = false, nullable = false)
+    private UUID id;
 
     @Column(nullable = false, length = 100)
     private String name;
 
-    @Column(nullable = false, columnDefinition = "text")
+    @Column(columnDefinition = "text")
     private String description;
 
-    @Column(nullable = false, columnDefinition = "text")
+    @Column(columnDefinition = "text")
     private String specification;
 
-    @JdbcTypeCode(SqlTypes.JSON)
+    @Type(JsonBinaryType.class)
     @Column(name = "specification_jsonb", columnDefinition = "jsonb")
-    private Map<String, Object> specificationJsonb;
-
-    @Version
-    private Long version;
+    private JsonNode specificationJsonB;
 
     protected AutoComponent() {
     }
 
-    public AutoComponent(String name, String description, String specification, Map<String, Object> specificationJsonb) {
+    public AutoComponent(String name, String description, String specification, JsonNode specificationJsonB) {
         this.name = name;
         this.description = description;
         this.specification = specification;
-        this.specificationJsonb = specificationJsonb;
+        this.specificationJsonB = specificationJsonB;
     }
 
-    public Long getId() {
+    public UUID getId() {
         return id;
     }
 
@@ -62,8 +60,8 @@ public class AutoComponent {
         return specification;
     }
 
-    public Map<String, Object> getSpecificationJsonb() {
-        return specificationJsonb;
+    public JsonNode getSpecificationJsonB() {
+        return specificationJsonB;
     }
 
     public void setDescription(String description) {
@@ -74,11 +72,8 @@ public class AutoComponent {
         this.specification = specification;
     }
 
-    public void setSpecificationJsonb(Map<String, Object> specificationJsonb) {
-        this.specificationJsonb = specificationJsonb;
+    public void setSpecificationJsonB(JsonNode specificationJsonB) {
+        this.specificationJsonB = specificationJsonB;
     }
- 
-    public Long getVersion() {
-        return version;
-    }
+
 }
