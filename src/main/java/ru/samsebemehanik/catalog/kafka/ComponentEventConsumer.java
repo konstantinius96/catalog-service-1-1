@@ -22,6 +22,11 @@ public class ComponentEventConsumer {
     @KafkaListener(topics = "component-events", groupId = "${spring.kafka.consumer.group-id}")
     public void onComponentCreated(ComponentCreatedEvent event) {
         log.info("Received component created event from Kafka: {}", event);
+
+        log.info("Forwarding component created event to WebSocket destination='{}'", COMPONENTS_TOPIC_DESTINATION);
         messagingTemplate.convertAndSend(COMPONENTS_TOPIC_DESTINATION, event);
+        log.info("Event forwarded to WebSocket destination='{}' for componentId='{}'",
+                COMPONENTS_TOPIC_DESTINATION,
+                event.componentId());
     }
 }
