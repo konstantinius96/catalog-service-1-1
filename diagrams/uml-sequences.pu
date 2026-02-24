@@ -1,0 +1,68 @@
+#### 1. Редактирование сущности
+
+title Редактирование сущности
+
+Администратор -> UI: Редактирует сущность
+
+alt Попытка выхода без сохранения
+  Администратор -> UI: Пытается покинуть страницу
+  UI -> Администратор: Подтвердить выход?
+  alt Подтверждает выход
+    UI -> Администратор: Выход, изменения потеряны
+  else Отказывается
+    UI -> Администратор: Возврат к редактированию
+  end
+end
+
+Администратор -> UI: Нажимает "Сохранить"
+UI -> Backend: POST /entities/{id}
+Backend -> UntiService: updateEntity()
+UntiService -> DB: save entity
+Backend -> VersionService: saveVersion()
+VersionService -> DB: insert version
+
+alt Ошибка сохранения
+  Backend -> UI: Ошибка
+  UI -> Администратор: Сообщение об ошибке
+else Успех
+  Backend -> UI: OK
+  UI -> Администратор: Изменения сохранены
+end
+
+#### 2. Добавление в избранное.
+@startuml
+
+title Добавление в избранное
+
+Actor User
+participant UI
+participant FavouritesController
+participant FavouritesService 
+
+User -> UI : Нажатие кнопки
+
+alt Компонент отсутствует в избранном
+  UI -> FavouritesController : POST /favourites/add
+  FavouritesController -> FavouritesService : addToFavourites
+  FavouritesService -> FavouriteRepository : получил и отправил данные
+  FavouriteRepository -> Database : Сохранение данных
+else Компонент есть в иззбранном
+  UI -> FavouritesController : DELETE /favourites/{id}
+  FavouritesController -> FavouritesService : deleteFromFavourites
+  FavouritesService -> FavouriteRepository : получил и отправил данные
+  FavouriteRepository -> Database : Удаление успешно
+end
+
+Database -> FavouriteRepository : Результат записи
+FavouriteRepository -> FavouritesService : Передача результата
+
+alt Ошибка сохранения
+  FavouritesService -> FavouritesController : Ошибка сохранения
+else Успех
+  FavouritesService -> FavouritesController : Сохранение успешно
+end
+
+FavouritesController -> UI : HTTP 2xx / HTTP 4xx / HTTP 5xx
+UI -> User : Вывод ответа
+
+@enduml
