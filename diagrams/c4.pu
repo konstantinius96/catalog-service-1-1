@@ -1,60 +1,76 @@
+#### C2. Container
 @startuml
 
-class user {
-    id : UUID << PK>>
-    login : string << unique>>
-    password_hash : string
-    registration_date : timestamp
-    role : string
-}
+!include <c4/C4_Container.puml>
 
-class auto_component {
-    id : UUID << PK>>
-    name : string
-    description : string
-    specification : JSONB
-}
+title Архитектура приложения СамСебеМеханик
 
-class auto_component_image {
-    id : bigint << PK>>
-    url : string
-    description : string
-    auto_component_id : UUID << FK>>
-}
+Person(user, "Пользователь", "Зарегистрированный пользователь системы")
 
-class favourite {
-    user_id : UUID << FK>>
-    auto_component_id : UUID << FK>>
-    --
-    <<PK(user_id, auto_component_id)>>
-}
+System_Boundary(system, "ВЕБ-приложение") {
 
-class auto_component_relation {
-    from_component : UUID << FK>>
-    to_component : UUID << FK>>
-    relation_type : string
-    --
-    <<PK(from_component, to_component, relation_type)>>
-}
+    Container(backend, "Backend API", "Spring Boot (Java)", "REST API")
 
+    ContainerDb(postgres, "Main Database", "PostgreSQL", "Хранит пользователей, компоненты, изображения, связи, избранное")
 
-package mongoDB << Document Store>> {
-
-  class auto_component_description_version << collection>> {
-      id : integer
-      version_number : string
-      changed_at : timestamp
-      changed_by : UUID
-      description_snapshot : string
-  }
+    ContainerDb(mongo, "Version Storage", "MongoDB", "Хранит версии описаний компонентов")
 
 }
 
-user "1" -- "N" favourite
-auto_component "1" -- "N" auto_component_image
+Rel(user, backend, "Использует", "HTTPS / JSON")
 
-auto_component "1" -- "N" favourite
-auto_component "1" -- "N" auto_component_relation : from
-auto_component "1" -- "N" auto_component_relation : to
+Rel(backend, postgres, "Читает/Пишет", "JPA / Hibernate")
+Rel(backend, mongo, "Читает/Пишет", "Mongo Driver / Spring Data Mongo")
+
+@enduml
+
+#### C3. Componets
+@startuml
+!include <c4/C4_Component.puml>
+
+title C4 Component Diagram — Catalog Service Backend (Ключевые бизнес-компоненты)
+
+Person(client, "Клиент (Frontend / API consumer)", "Использует REST API")
+
+Container_Boundary(backend, "Catalog Service (Spring Boot)") {
+
+    Component(apiControllers, "Business REST Controllers", "Spring Web", "AutoComponentController, FavouriteController")
+
+    Component(componentService, "AutoComponentServiceImpl", "Service", "Создание автокомпонентов")
+
+    Component(favouriteService, "FavouriteServiceImpl", "Service", "Добавление и получение избранного")
+
+    Component(versioningService, "AutoComponentVersioningService", "Service", "Версионирование описаний компонентов")
+
+    Component(mappers, "DTO Mappers", "AutoComponentMapper, FavouriteMapper", "Преобразование Entity ↔ DTO")
+
+    Component(componentRepo, "AutoComponentRepository", "Spring Data JPA", "CRUD для AutoComponent")
+
+    Component(favouriteRepo, "FavouriteRepository", "Spring Data JPA", "CRUD и выборка избранного по userId")
+
+    Component(versionRepo, "AutoComponentVersionRepository", "Spring Data MongoDB", "Хранение версий AutoComponentVersion")
+}
+
+ContainerDb(postgres, "PostgreSQL", "Relational DB", "auto_component, favourites")
+ContainerDb(mongo, "MongoDB", "Document DB", "auto_component_versions")
+
+Rel(client, apiControllers, "Вызывает endpoints", "HTTP/JSON")
+
+Rel(apiControllers, componentService, "Использует")
+Rel(apiControllers, favouriteService, "Использует")
+
+Rel(componentService, componentRepo, "Сохраняет/читает AutoComponent")
+Rel(componentService, mappers, "Формирует DTO")
+
+Rel(favouriteService, favouriteRepo, "Сохраняет/читает Favourite")
+Rel(favouriteService, componentRepo, "Проверяет существование компонента")
+Rel(favouriteService, mappers, "Формирует DTO")
+
+Rel(versioningService, componentRepo, "Читает/обновляет компонент")
+Rel(versioningService, versionRepo, "Сохраняет версии")
+
+Rel(componentRepo, postgres, "JPA/Hibernate")
+Rel(favouriteRepo, postgres, "JPA/Hibernate")
+Rel(versionRepo, mongo, "Spring Data MongoDB")
 
 @enduml
