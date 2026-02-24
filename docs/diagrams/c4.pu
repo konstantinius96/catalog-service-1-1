@@ -24,11 +24,11 @@ Rel(backend, mongo, "Читает/Пишет", "Mongo Driver / Spring Data Mongo
 
 @enduml
 
-#### C3. Componets
+#### C3. Component
 @startuml
 !include <c4/C4_Component.puml>
 
-title C4 Component Diagram — Catalog Service Backend (Ключевые бизнес-компоненты)
+title Ключевые бизнес-компоненты
 
 Person(client, "Клиент (Frontend / API consumer)", "Использует REST API")
 
