@@ -1,0 +1,60 @@
+@startuml
+
+class user {
+    id : UUID << PK>>
+    login : string << unique>>
+    password_hash : string
+    registration_date : timestamp
+    role : string
+}
+
+class auto_component {
+    id : UUID << PK>>
+    name : string
+    description : string
+    specification : JSONB
+}
+
+class auto_component_image {
+    id : bigint << PK>>
+    url : string
+    description : string
+    auto_component_id : UUID << FK>>
+}
+
+class favourite {
+    user_id : UUID << FK>>
+    auto_component_id : UUID << FK>>
+    --
+    <<PK(user_id, auto_component_id)>>
+}
+
+class auto_component_relation {
+    from_component : UUID << FK>>
+    to_component : UUID << FK>>
+    relation_type : string
+    --
+    <<PK(from_component, to_component, relation_type)>>
+}
+
+
+package mongoDB << Document Store>> {
+
+  class auto_component_description_version << collection>> {
+      id : integer
+      version_number : string
+      changed_at : timestamp
+      changed_by : UUID
+      description_snapshot : string
+  }
+
+}
+
+user "1" -- "N" favourite
+auto_component "1" -- "N" auto_component_image
+
+auto_component "1" -- "N" favourite
+auto_component "1" -- "N" auto_component_relation : from
+auto_component "1" -- "N" auto_component_relation : to
+
+@enduml
