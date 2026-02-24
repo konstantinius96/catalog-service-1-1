@@ -1,0 +1,61 @@
+@startuml
+class Пользователь 
+{
+id : integer
+login: string
+passwordHash : string
+}
+
+class "Компонент \nАвтомобиля"
+{ 
+id : integer
+description : string
+specifications : string
+}
+
+class Изображение
+{
+id : integer
+url : string
+description : string
+}
+
+class Роль
+{
+id : integer
+name : string
+description : string
+}
+
+class Избранное
+{
+id : integer
+addedAt : date
+}
+
+class Версионность
+{
+id : integer
+versionNumber: string
+changedAt : date
+changedBy : Пользователь
+descriptionSnapshot : string
+}
+
+class ОтношенияКомпонентов
+{
+id : integer
+fromUnit : КомпонентАвтомобиля
+toUnit : КомпонентАвтомобиля
+relationType : enum
+}
+
+Пользователь "1" -- "0..*" Избранное
+Пользователь "1" -- "1" Роль
+"Компонент \nАвтомобиля" "1" *-- "0..*"  Изображение
+"Компонент \nАвтомобиля" "1" -- "0..*" Избранное
+"Компонент \nАвтомобиля" "1" *-- "0..*" Версионность
+"Компонент \nАвтомобиля" "1" -- "0..*" ОтношенияКомпонентов : from
+"Компонент \nАвтомобиля" "1" -- "0..*" ОтношенияКомпонентов : to
+
+@enduml
