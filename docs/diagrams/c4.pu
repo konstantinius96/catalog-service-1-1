@@ -9,7 +9,7 @@ Person(user, "Пользователь", "Зарегистрированный �
 
 System_Boundary(system, "ВЕБ-приложение") {
 
-    Container(backend, "Backend API", "Spring Boot (Java)", "REST API")
+    Container(backend, "Backend API", "Spring Boot (Java)", "REST API + WebSocket/STOMP")
 
     ContainerDb(postgres, "Main Database", "PostgreSQL", "Хранит пользователей, компоненты, изображения, связи, избранное")
 
@@ -17,10 +17,14 @@ System_Boundary(system, "ВЕБ-приложение") {
 
 }
 
+System_Ext(kafka, "Kafka", "Брокер событий")
+
 Rel(user, backend, "Использует", "HTTPS / JSON")
+Rel(user, backend, "Подписывается на события", "WebSocket / STOMP (/ws, /topic/components)")
 
 Rel(backend, postgres, "Читает/Пишет", "JPA / Hibernate")
 Rel(backend, mongo, "Читает/Пишет", "Mongo Driver / Spring Data Mongo")
+Rel(backend, kafka, "Публикует/читает события", "Spring Kafka / topic: component-events")
 
 @enduml
 
@@ -30,7 +34,7 @@ Rel(backend, mongo, "Читает/Пишет", "Mongo Driver / Spring Data Mongo
 
 title Ключевые бизнес-компоненты
 
-Person(client, "Клиент (Frontend / API consumer)", "Использует REST API")
+Person(client, "Клиент (Frontend / API consumer)", "Использует REST API и WebSocket")
 
 Container_Boundary(backend, "Catalog Service (Spring Boot)") {
 
@@ -41,6 +45,12 @@ Container_Boundary(backend, "Catalog Service (Spring Boot)") {
     Component(favouriteService, "FavouriteServiceImpl", "Service", "Добавление и получение избранного")
 
     Component(versioningService, "AutoComponentVersioningService", "Service", "Версионирование описаний компонентов")
+
+    Component(componentEventProducer, "ComponentEventProducer", "Spring Kafka Producer", "Публикация ComponentCreatedEvent в Kafka")
+
+    Component(componentEventConsumer, "ComponentEventConsumer", "Spring Kafka Listener", "Читает component-events и отправляет в WebSocket")
+
+    Component(websocketMessaging, "SimpMessagingTemplate", "Spring WebSocket", "Отправляет события в /topic/components")
 
     Component(mappers, "DTO Mappers", "AutoComponentMapper, FavouriteMapper", "Преобразование Entity ↔ DTO")
 
@@ -53,14 +63,21 @@ Container_Boundary(backend, "Catalog Service (Spring Boot)") {
 
 ContainerDb(postgres, "PostgreSQL", "Relational DB", "auto_component, favourites")
 ContainerDb(mongo, "MongoDB", "Document DB", "auto_component_versions")
+System_Ext(kafka, "Kafka", "topic: component-events")
 
 Rel(client, apiControllers, "Вызывает endpoints", "HTTP/JSON")
+Rel(client, websocketMessaging, "Получает события", "WebSocket/STOMP /topic/components")
 
 Rel(apiControllers, componentService, "Использует")
 Rel(apiControllers, favouriteService, "Использует")
 
 Rel(componentService, componentRepo, "Сохраняет/читает AutoComponent")
 Rel(componentService, mappers, "Формирует DTO")
+Rel(componentService, componentEventProducer, "Публикует событие после сохранения")
+
+Rel(componentEventProducer, kafka, "Отправляет ComponentCreatedEvent", "Spring Kafka")
+Rel(kafka, componentEventConsumer, "Доставляет ComponentCreatedEvent", "Spring Kafka Listener")
+Rel(componentEventConsumer, websocketMessaging, "Публикует в /topic/components")
 
 Rel(favouriteService, favouriteRepo, "Сохраняет/читает Favourite")
 Rel(favouriteService, componentRepo, "Проверяет существование компонента")
