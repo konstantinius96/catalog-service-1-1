@@ -46,7 +46,57 @@ paths:
                     content:
                         application/json:
                             schema:
-                               $ref: '#/components/schemas/ComponentErrorResponse'                            
+                               $ref: '#/components/schemas/ComponentErrorResponse'
+    /api/v1/autocomponents/{id}:
+        put:
+            summary: Отредактировать компонент с указанным id
+            tags: [компонент]
+            security:
+                - bearerAuth: []
+            parameters:
+                - name: id
+                  in: paths
+                  required: true
+                  schema:
+                    type: string
+                    format: uuid
+                    
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/ComponentEditRequest'
+                        example:
+                          "name": "Двигатель"
+                          "description": "Разновидность теплового двигателя, в котором топливная смесь сгорает непосредственно в рабочей камере (внутри) двигателя."
+                          "specification": "Продукты сгорания образуют рабочее тело. Такой двигатель является первичным, химическим, и преобразует энергию сгорания топлива в механическую работу."
+                          "specification_jsonB": null
+            responses:
+                '200':
+                    description: Компонент изменен успешно
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ComponentEditResponse' 
+                '400':
+                    description: Ошибка валидации
+                    content:
+                        application/json:
+                            schema:
+                               $ref: '#/components/schemas/ComponentErrorResponse' 
+                '500':
+                    description: Внутренняя ошибка сервера
+                    content:
+                        application/json:
+                            schema:
+                               $ref: '#/components/schemas/ComponentErrorResponse'
+                '404':
+                    description: Ресурс не найден
+                    content:
+                        application/json:
+                            schema:
+                               $ref: '#/components/schemas/ComponentErrorResponse' 
 components:
     schemas:
         ComponentCreateRequest:
@@ -90,9 +140,38 @@ components:
                     type: array
                     items:
                         type: string
+        ComponentEditRequest:
+            type: object
+            required: [name]
+            properties:
+                name:
+                    type: string
+                    minLength: 2
+                description:
+                    type: string
+                specification:
+                    type: string
+                specification_jsonB:
+                    type: object
+                    additionalProperties: true
+        ComponentEditResponse:
+            type: object
+            properties:
+                id:
+                    type: string
+                    format: uuid
+                    readOnly: true
+                name:
+                    type: string
+                description:
+                    type: string
+                specification:
+                    type: string
+                specification_jsonB:
+                    type: object
+                    additionalProperties: true
     securitySchemes:
         bearerAuth:
             type: http
             scheme: bearer
             bearerFormat: jwt
-
