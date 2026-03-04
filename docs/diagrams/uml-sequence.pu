@@ -1,33 +1,39 @@
 #### 1. Редактирование сущности
 
-title Редактирование сущности
+@startuml
 
-Администратор -> UI: Редактирует сущность
+actor Администратор
+participant Frontend
+participant Backend
+participant KafkaBroker
+database PostgreSQL
+database MongoDB
 
-alt Попытка выхода без сохранения
-  Администратор -> UI: Пытается покинуть страницу
-  UI -> Администратор: Подтвердить выход?
-  alt Подтверждает выход
-    UI -> Администратор: Выход, изменения потеряны
-  else Отказывается
-    UI -> Администратор: Возврат к редактированию
-  end
-end
+== WebSocket подключение ==
 
-Администратор -> UI: Нажимает "Сохранить"
-UI -> Backend: POST /entities/{id}
-Backend -> UntiService: updateEntity()
-UntiService -> DB: save entity
-Backend -> VersionService: saveVersion()
-VersionService -> DB: insert version
+Frontend -> Backend : WS handshake (/ws)
+Frontend -> Backend : SUBSCRIBE /topic/components
 
-alt Ошибка сохранения
-  Backend -> UI: Ошибка
-  UI -> Администратор: Сообщение об ошибке
-else Успех
-  Backend -> UI: OK
-  UI -> Администратор: Изменения сохранены
-end
+== Редактирование компонента ==
+
+Администратор -> Frontend : Нажать "Сохранить"
+Frontend -> Backend : PUT /api/v1/component/{id}
+
+Backend -> PostgreSQL : UPDATE component
+PostgreSQL --> Backend : OK
+
+Backend -> MongoDB : save version
+MongoDB --> Backend : OK
+
+Backend -> KafkaBroker : publish ComponentUpdated event
+Backend --> Frontend : HTTP 200 OK
+
+== Асинхронное уведомление ==
+
+KafkaBroker ->> Backend : deliver ComponentUpdated event
+Backend ->> Frontend : push via WebSocket (/topic/components)
+
+@enduml
 
 #### 2. Добавление в избранное.
 @startuml
