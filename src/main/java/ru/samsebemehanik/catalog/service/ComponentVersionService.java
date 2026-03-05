@@ -1,5 +1,6 @@
 package ru.samsebemehanik.catalog.service;
 
+import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DuplicateKeyException;
@@ -31,7 +32,19 @@ public class ComponentVersionService {
 
     @KafkaListener(topics = "auto-component-updated", groupId = "${spring.kafka.consumer.group-id}")
     public void onComponentUpdated(ComponentUpdatedEvent event) {
+        String databaseName = mongoTemplate.getDb().getName();
+        String collectionName = mongoTemplate.getCollectionName(AutoComponentDescriptionVersion.class);
+
+        log.info("Versioning start: db='{}', collection='{}', componentId={}, eventId={}, changedAt={}",
+                databaseName,
+                collectionName,
+                event.componentId(),
+                event.eventId(),
+                event.changedAt());
+
         Long versionNumber = nextVersion(event.componentId());
+        log.info("Versioning counter allocated: componentId={}, versionNumber={}",
+                event.componentId(), versionNumber);
 
         AutoComponentDescriptionVersion version = new AutoComponentDescriptionVersion(
                 event.componentId(),
@@ -48,16 +61,27 @@ public class ComponentVersionService {
         );
 
         try {
-            versionRepository.save(version);
-            log.info("Version saved for componentId={}, versionNumber={}, eventId={}",
-                    event.componentId(), versionNumber, event.eventId());
+            AutoComponentDescriptionVersion saved = versionRepository.save(version);
+
+            Query verificationQuery = new Query(Criteria.where("component_id").is(event.componentId())
+                    .and("event_id").is(event.eventId()));
+            long savedCount = mongoTemplate.count(verificationQuery, AutoComponentDescriptionVersion.class);
+
+            log.info("Version saved: db='{}', collection='{}', componentId={}, versionNumber={}, eventId={}, documentId={}, verificationCount={}",
+                    databaseName,
+                    collectionName,
+                    event.componentId(),
+                    versionNumber,
+                    event.eventId(),
+                    saved.getId(),
+                    savedCount);
         } catch (DuplicateKeyException ex) {
             log.info("Duplicate component update event ignored for componentId={}, eventId={}",
                     event.componentId(), event.eventId());
         }
     }
 
-    private Long nextVersion(java.util.UUID componentId) {
+    private Long nextVersion(UUID componentId) {
         Query query = new Query(Criteria.where("_id").is(componentId.toString()));
         Update update = new Update().inc("seq", 1L);
 

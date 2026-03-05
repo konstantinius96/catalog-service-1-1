@@ -54,6 +54,11 @@ public class AutoComponentDescriptionVersion {
         this.snapshot = snapshot;
     }
 
+
+    public String getId() {
+        return id;
+    }
+
     public static class Snapshot {
 
         @Field("name")
