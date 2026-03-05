@@ -58,7 +58,7 @@ public class ComponentVersionService {
     }
 
     private Long nextVersion(java.util.UUID componentId) {
-        Query query = new Query(Criteria.where("component_id").is(componentId));
+        Query query = new Query(Criteria.where("_id").is(componentId.toString()));
         Update update = new Update().inc("seq", 1L);
 
         AutoComponentVersionCounter counter = mongoTemplate.findAndModify(

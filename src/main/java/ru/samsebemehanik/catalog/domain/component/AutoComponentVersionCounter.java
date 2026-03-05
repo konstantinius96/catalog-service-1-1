@@ -1,6 +1,5 @@
 package ru.samsebemehanik.catalog.domain.component;
 
-import java.util.UUID;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
@@ -9,8 +8,7 @@ import org.springframework.data.mongodb.core.mapping.Field;
 public class AutoComponentVersionCounter {
 
     @Id
-    @Field("component_id")
-    private UUID componentId;
+    private String componentId;
 
     @Field("seq")
     private Long seq;
