@@ -37,6 +37,16 @@ public class GlobalExceptionHandler {
                 ));
     }
 
+    @ExceptionHandler(ComponentNotFoundException.class)
+    public ResponseEntity<ComponentErrorResponse> handleNotFound(ComponentNotFoundException exception) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new ComponentErrorResponse(
+                        "NOT_FOUND",
+                        "Resource not found",
+                        List.of(exception.getMessage())
+                ));
+    }
+
     @ExceptionHandler({HibernateException.class, DataAccessException.class, ComponentProcessingException.class})
     public ResponseEntity<ComponentErrorResponse> handlePersistence(RuntimeException exception) {
         return ResponseEntity.badRequest()
