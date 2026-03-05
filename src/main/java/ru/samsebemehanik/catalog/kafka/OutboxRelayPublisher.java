@@ -8,6 +8,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataAccessException;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -24,6 +25,7 @@ public class OutboxRelayPublisher {
     private final OutboxEventRepository outboxEventRepository;
     private final KafkaTemplate<String, ComponentUpdatedEvent> kafkaTemplate;
     private final ObjectMapper objectMapper;
+    private boolean outboxStorageWarned;
 
     public OutboxRelayPublisher(OutboxEventRepository outboxEventRepository,
                                 KafkaTemplate<String, ComponentUpdatedEvent> kafkaTemplate,
@@ -36,7 +38,21 @@ public class OutboxRelayPublisher {
     @Scheduled(fixedDelayString = "${app.outbox.relay.fixed-delay-ms:3000}")
     @Transactional
     public void publishPendingEvents() {
-        List<OutboxEvent> events = outboxEventRepository.findTop100ByPublishedAtIsNullOrderByIdAsc();
+        List<OutboxEvent> events;
+        try {
+            events = outboxEventRepository.findTop100ByPublishedAtIsNullOrderByIdAsc();
+            outboxStorageWarned = false;
+        } catch (DataAccessException ex) {
+            if (!outboxStorageWarned) {
+                outboxStorageWarned = true;
+                log.warn("Outbox table is unavailable. Apply DB migration for table 'outbox_event'. " +
+                        "Relay is temporarily skipped until schema is ready.", ex);
+            } else {
+                log.debug("Outbox table is still unavailable, relay skipped.");
+            }
+            return;
+        }
+
         for (OutboxEvent outboxEvent : events) {
             publishSingle(outboxEvent);
         }
