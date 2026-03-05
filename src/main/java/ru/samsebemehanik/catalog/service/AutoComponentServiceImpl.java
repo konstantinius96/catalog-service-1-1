@@ -12,19 +12,23 @@ import ru.samsebemehanik.catalog.exception.ComponentNotFoundException;
 import ru.samsebemehanik.catalog.kafka.ComponentEventProducer;
 import ru.samsebemehanik.catalog.mapper.AutoComponentMapper;
 import ru.samsebemehanik.catalog.repository.AutoComponentRepository;
+import ru.samsebemehanik.catalog.service.OutboxService.AutoComponentStateSnapshot;
 
 @Service
 public class AutoComponentServiceImpl implements AutoComponentService {
 
     private final AutoComponentRepository autoComponentRepository;
     private final ComponentEventProducer componentEventProducer;
+    private final OutboxService outboxService;
 
     public AutoComponentServiceImpl(
             AutoComponentRepository autoComponentRepository,
-            ComponentEventProducer componentEventProducer
+            ComponentEventProducer componentEventProducer,
+            OutboxService outboxService
     ) {
         this.autoComponentRepository = autoComponentRepository;
         this.componentEventProducer = componentEventProducer;
+        this.outboxService = outboxService;
     }
 
     @Override
@@ -53,7 +57,18 @@ public class AutoComponentServiceImpl implements AutoComponentService {
         component.setSpecification(request.getSpecification());
         component.setSpecificationJsonB(request.getSpecificationJsonB());
 
-        AutoComponent updated = autoComponentRepository.save(component);
-        return AutoComponentMapper.toEditResponse(updated);
+        autoComponentRepository.saveAndFlush(component);
+        AutoComponent factualState = autoComponentRepository.findById(id)
+                .orElseThrow(() -> new ComponentNotFoundException("Component with id=" + id + " was not found"));
+
+        outboxService.storeComponentUpdated(new AutoComponentStateSnapshot(
+                factualState.getId(),
+                factualState.getName(),
+                factualState.getDescription(),
+                factualState.getSpecification(),
+                factualState.getSpecificationJsonB()
+        ));
+
+        return AutoComponentMapper.toEditResponse(factualState);
     }
 }
