@@ -1,5 +1,6 @@
 package ru.samsebemehanik.catalog.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,58 +24,42 @@ public class ComponentVersionService {
 
     private final MongoTemplate mongoTemplate;
     private final AutoComponentDescriptionVersionRepository versionRepository;
+    private final ObjectMapper objectMapper;
 
     public ComponentVersionService(MongoTemplate mongoTemplate,
-                                   AutoComponentDescriptionVersionRepository versionRepository) {
+                                   AutoComponentDescriptionVersionRepository versionRepository,
+                                   ObjectMapper objectMapper) {
         this.mongoTemplate = mongoTemplate;
         this.versionRepository = versionRepository;
+        this.objectMapper = objectMapper;
     }
 
     @KafkaListener(topics = "auto-component-updated", groupId = "${spring.kafka.consumer.group-id}")
     public void onComponentUpdated(ComponentUpdatedEvent event) {
-        String databaseName = mongoTemplate.getDb().getName();
-        String collectionName = mongoTemplate.getCollectionName(AutoComponentDescriptionVersion.class);
-
-        log.info("Versioning start: db='{}', collection='{}', componentId={}, eventId={}, changedAt={}",
-                databaseName,
-                collectionName,
-                event.componentId(),
-                event.eventId(),
-                event.changedAt());
-
         Long versionNumber = nextVersion(event.componentId());
-        log.info("Versioning counter allocated: componentId={}, versionNumber={}",
-                event.componentId(), versionNumber);
+
+        Object specificationJson = event.specificationJsonB() == null
+                ? null
+                : objectMapper.convertValue(event.specificationJsonB(), Object.class);
 
         AutoComponentDescriptionVersion version = new AutoComponentDescriptionVersion(
-                event.componentId(),
+                event.componentId().toString(),
                 versionNumber,
                 event.changedAt(),
                 null,
-                event.eventId(),
+                event.eventId().toString(),
                 new AutoComponentDescriptionVersion.Snapshot(
                         event.name(),
                         event.description(),
                         event.specification(),
-                        event.specificationJsonB()
+                        specificationJson
                 )
         );
 
         try {
-            AutoComponentDescriptionVersion saved = versionRepository.save(version);
-
-            Query verificationQuery = new Query(Criteria.where("component_id").is(event.componentId())
-                    .and("event_id").is(event.eventId()));
-            long savedCount = mongoTemplate.count(verificationQuery, AutoComponentDescriptionVersion.class);
-
-            log.info("Version saved: db='{}', collection='{}', componentId={}, versionNumber={}, eventId={}, documentId={}, verificationCount={}",
-                    databaseName,
-                    collectionName,
-                    event.componentId(),
-                    versionNumber,
-                    event.eventId(),
-                    saved.getId(),
-                    savedCount);
+            versionRepository.save(version);
+            log.info("Version saved for componentId={}, versionNumber={}, eventId={}",
+                    event.componentId(), versionNumber, event.eventId());
         } catch (DuplicateKeyException ex) {
             log.info("Duplicate component update event ignored for componentId={}, eventId={}",
                     event.componentId(), event.eventId());

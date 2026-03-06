@@ -1,8 +1,6 @@
 package ru.samsebemehanik.catalog.domain.component;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import java.time.Instant;
-import java.util.UUID;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.index.CompoundIndexes;
@@ -20,7 +18,7 @@ public class AutoComponentDescriptionVersion {
     private String id;
 
     @Field("component_id")
-    private UUID componentId;
+    private String componentId;
 
     @Field("version_number")
     private Long versionNumber;
@@ -32,7 +30,7 @@ public class AutoComponentDescriptionVersion {
     private Long changedBy;
 
     @Field("event_id")
-    private UUID eventId;
+    private String eventId;
 
     @Field("snapshot")
     private Snapshot snapshot;
@@ -40,11 +38,11 @@ public class AutoComponentDescriptionVersion {
     protected AutoComponentDescriptionVersion() {
     }
 
-    public AutoComponentDescriptionVersion(UUID componentId,
+    public AutoComponentDescriptionVersion(String componentId,
                                            Long versionNumber,
                                            Instant changedAt,
                                            Long changedBy,
-                                           UUID eventId,
+                                           String eventId,
                                            Snapshot snapshot) {
         this.componentId = componentId;
         this.versionNumber = versionNumber;
@@ -53,7 +51,6 @@ public class AutoComponentDescriptionVersion {
         this.eventId = eventId;
         this.snapshot = snapshot;
     }
-
 
     public String getId() {
         return id;
@@ -71,12 +68,12 @@ public class AutoComponentDescriptionVersion {
         private String specification;
 
         @Field("specification_jsonB")
-        private JsonNode specificationJsonB;
+        private Object specificationJsonB;
 
         protected Snapshot() {
         }
 
-        public Snapshot(String name, String description, String specification, JsonNode specificationJsonB) {
+        public Snapshot(String name, String description, String specification, Object specificationJsonB) {
             this.name = name;
             this.description = description;
             this.specification = specification;
