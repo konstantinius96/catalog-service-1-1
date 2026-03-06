@@ -5,7 +5,7 @@ info:
     version: 1.0.0
     contact:
         name: Project
-        email: email@email.email
+        email: konstantin96@list.ru
     license:
         name: MIT
 servers: 
@@ -41,12 +41,6 @@ paths:
                         application/json:
                             schema:
                                $ref: '#/components/schemas/ComponentErrorResponse' 
-                '500':
-                    description: Внутренняя ошибка сервера
-                    content:
-                        application/json:
-                            schema:
-                               $ref: '#/components/schemas/ComponentErrorResponse'
     /api/v1/autocomponents/{id}:
         put:
             summary: Отредактировать компонент с указанным id
@@ -91,6 +85,35 @@ paths:
                         application/json:
                             schema:
                                $ref: '#/components/schemas/ComponentErrorResponse'
+                '404':
+                    description: Ресурс не найден
+                    content:
+                        application/json:
+                            schema:
+                               $ref: '#/components/schemas/ComponentErrorResponse' 
+        get:
+            summary: Получить единицу компонента по его id
+            tags: [компонент]
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                    format: uuid
+            responses:
+                '200':
+                    description: Компонент успешно получен
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ComponentResponse'
+                '400':
+                    description: Некорректный идентификатор компонента
+                    content:
+                        application/json:
+                            schema:
+                               $ref: '#/components/schemas/ComponentErrorResponse' 
                 '404':
                     description: Ресурс не найден
                     content:
@@ -155,6 +178,22 @@ components:
                     type: object
                     additionalProperties: true
         ComponentEditResponse:
+            type: object
+            properties:
+                id:
+                    type: string
+                    format: uuid
+                    readOnly: true
+                name:
+                    type: string
+                description:
+                    type: string
+                specification:
+                    type: string
+                specification_jsonB:
+                    type: object
+                    additionalProperties: true
+        ComponentResponse:
             type: object
             properties:
                 id:
