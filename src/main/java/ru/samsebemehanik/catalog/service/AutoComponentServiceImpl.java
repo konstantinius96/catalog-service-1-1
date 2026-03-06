@@ -8,6 +8,7 @@ import ru.samsebemehanik.catalog.dto.ComponentCreateRequest;
 import ru.samsebemehanik.catalog.dto.ComponentCreateResponse;
 import ru.samsebemehanik.catalog.dto.ComponentEditRequest;
 import ru.samsebemehanik.catalog.dto.ComponentEditResponse;
+import ru.samsebemehanik.catalog.dto.AutoComponentDto;
 import ru.samsebemehanik.catalog.exception.ComponentNotFoundException;
 import ru.samsebemehanik.catalog.kafka.ComponentEventProducer;
 import ru.samsebemehanik.catalog.mapper.AutoComponentMapper;
@@ -70,5 +71,14 @@ public class AutoComponentServiceImpl implements AutoComponentService {
         ));
 
         return AutoComponentMapper.toEditResponse(factualState);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public AutoComponentDto getById(UUID id) {
+        AutoComponent component = autoComponentRepository.findById(id)
+                .orElseThrow(() -> new ComponentNotFoundException("Component with id=" + id + " was not found"));
+
+        return AutoComponentMapper.toDto(component);
     }
 }
