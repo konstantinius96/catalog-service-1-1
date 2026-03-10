@@ -44,24 +44,24 @@ paths:
         get:
             summary: Получить все автокомпоненты
             tags: [Компонент]
-			parameters:
-				- name: page
-				in: query
-				schema: 
-					type: integer
-					example: 0
-				- name: size
-				in: query
-				schema:
-					type: integer
-					example: 20
+            parameters:
+                - name: page
+                  in: query
+                  schema: 
+                      type: integer
+                      example: 0
+                - name: size
+                  in: query
+                  schema:
+                      type: integer
+                      example: 20
             responses:
                 '200':
                     description: Компоненты успешно получены
                     content:
                         application/json:
                             schema:
-								$ref: '#/components/schemas/ComponentPageResponse'
+                                $ref: '#/components/schemas/ComponentPageResponse'
     /api/v1/autocomponents/{id}:
         put:
             summary: Отредактировать компонент с указанным id
@@ -141,7 +141,7 @@ paths:
                         application/json:
                             schema:
                                $ref: '#/components/schemas/ComponentErrorResponse' 
-	/api/v1/leftMenu:
+    /api/v1/leftMenu:
         get:
             summary: Меню для автокомпонентов
             tags: [Меню]
@@ -151,9 +151,9 @@ paths:
                     content:
                         application/json:
                             schema:
-								type: array
-								items:
-									$ref: '#/components/schemas/MenuResponse'
+                                type: array
+                                items:
+                                    $ref: '#/components/schemas/MenuResponse'
 components:
     schemas:
         ComponentCreateRequest:
@@ -243,33 +243,33 @@ components:
                 specification_jsonB:
                     type: object
                     additionalProperties: true
-		MenuResponse:
+        MenuResponse:
             type: object
             properties:
                 id:
-					type: string
-					format: uuid
-				name:
                     type: string
-		ComponentPageResponse:
-			type: object
-			properties:
-				content:
-					type: array
-					items:
-						$ref: '#/components/schemas/ComponentResponse'
-				page:
-					type: integer
-					example: 0
-				size:
-					type: integer
-					example: 20
-				totalElements:
-					type: integer
-					example: 134
-				totalPages:
-					type: integer
-					example: 7
+                    format: uuid
+                name:
+                    type: string
+        ComponentPageResponse:
+            type: object
+            properties:
+                content:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/ComponentResponse'
+                page:
+                    type: integer
+                    example: 0
+                size:
+                    type: integer
+                    example: 20
+                totalElements:
+                    type: integer
+                    example: 134
+                totalPages:
+                    type: integer
+                    example: 7
     securitySchemes:
         bearerAuth:
             type: http
