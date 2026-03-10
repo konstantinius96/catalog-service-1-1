@@ -141,7 +141,7 @@ paths:
                         application/json:
                             schema:
                                $ref: '#/components/schemas/ComponentErrorResponse' 
-	/api/v1/leftMenu:
+    /api/v1/leftMenu:
         get:
             summary: Меню для автокомпонентов
             tags: [Меню]
