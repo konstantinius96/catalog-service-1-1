@@ -46,7 +46,7 @@ paths:
             tags: [Компонент]
             parameters:
                 - name: page
-                in: query
+                  in: query
                 schema: 
                     type: integer
                     example: 0
