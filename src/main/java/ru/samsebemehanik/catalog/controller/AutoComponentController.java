@@ -48,7 +48,7 @@ public class AutoComponentController {
 
     @GetMapping
     public AutoComponentPageResponse getAll(
-            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "20") int size
     ) {
         return autoComponentService.getAll(page, size);

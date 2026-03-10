@@ -89,14 +89,19 @@ public class AutoComponentServiceImpl implements AutoComponentService {
     @Override
     @Transactional(readOnly = true)
     public AutoComponentPageResponse getAll(int page, int size) {
-        Page<AutoComponent> componentPage = autoComponentRepository.findAll(PageRequest.of(page, size));
+        int normalizedPage = page < 1 ? 1 : page;
+        int normalizedSize = size < 1 ? 20 : size;
+
+        Page<AutoComponent> componentPage = autoComponentRepository.findAll(
+                PageRequest.of(normalizedPage - 1, normalizedSize)
+        );
 
         return new AutoComponentPageResponse(
                 componentPage.getContent().stream()
                         .map(AutoComponentMapper::toDto)
                         .toList(),
-                componentPage.getNumber(),
-                componentPage.getSize(),
+                normalizedPage,
+                normalizedSize,
                 componentPage.getTotalElements(),
                 componentPage.getTotalPages()
         );
