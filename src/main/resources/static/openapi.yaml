@@ -243,15 +243,15 @@ components:
                 specification_jsonB:
                     type: object
                     additionalProperties: true
-		MenuResponse:
+        MenuResponse:
             type: object
             properties:
                 id:
-					type: string
-					format: uuid
-				name:
                     type: string
-		ComponentPageResponse:
+                    format: uuid
+                name:
+                    type: string
+        ComponentPageResponse:
             type: object
             properties:
                 content:
