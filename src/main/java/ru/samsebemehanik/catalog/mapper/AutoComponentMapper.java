@@ -4,6 +4,7 @@ import ru.samsebemehanik.catalog.domain.component.AutoComponent;
 import ru.samsebemehanik.catalog.dto.AutoComponentDto;
 import ru.samsebemehanik.catalog.dto.ComponentCreateResponse;
 import ru.samsebemehanik.catalog.dto.ComponentEditResponse;
+import ru.samsebemehanik.catalog.dto.MenuResponse;
 
 public class AutoComponentMapper {
 
@@ -14,6 +15,13 @@ public class AutoComponentMapper {
                 component.getDescription(),
                 component.getSpecification(),
                 component.getSpecificationJsonB()
+        );
+    }
+
+    public static MenuResponse toMenuResponse(AutoComponent component) {
+        return new MenuResponse(
+                component.getId(),
+                component.getName()
         );
     }
 
