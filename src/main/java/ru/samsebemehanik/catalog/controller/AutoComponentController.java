@@ -9,13 +9,15 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import ru.samsebemehanik.catalog.dto.AutoComponentDto;
+import ru.samsebemehanik.catalog.dto.AutoComponentPageResponse;
 import ru.samsebemehanik.catalog.dto.ComponentCreateRequest;
 import ru.samsebemehanik.catalog.dto.ComponentCreateResponse;
 import ru.samsebemehanik.catalog.dto.ComponentEditRequest;
 import ru.samsebemehanik.catalog.dto.ComponentEditResponse;
-import ru.samsebemehanik.catalog.dto.AutoComponentDto;
 import ru.samsebemehanik.catalog.service.AutoComponentService;
 
 @RestController
@@ -42,5 +44,13 @@ public class AutoComponentController {
     @GetMapping("/{id}")
     public AutoComponentDto getById(@PathVariable UUID id) {
         return autoComponentService.getById(id);
+    }
+
+    @GetMapping
+    public AutoComponentPageResponse getAll(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "20") int size
+    ) {
+        return autoComponentService.getAll(page, size);
     }
 }

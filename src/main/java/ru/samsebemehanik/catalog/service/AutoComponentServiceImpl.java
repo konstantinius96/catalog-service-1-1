@@ -1,13 +1,18 @@
 package ru.samsebemehanik.catalog.service;
 
+import java.util.List;
 import java.util.UUID;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.samsebemehanik.catalog.domain.component.AutoComponent;
+import ru.samsebemehanik.catalog.dto.AutoComponentPageResponse;
 import ru.samsebemehanik.catalog.dto.ComponentCreateRequest;
 import ru.samsebemehanik.catalog.dto.ComponentCreateResponse;
 import ru.samsebemehanik.catalog.dto.ComponentEditRequest;
 import ru.samsebemehanik.catalog.dto.ComponentEditResponse;
+import ru.samsebemehanik.catalog.dto.MenuResponse;
 import ru.samsebemehanik.catalog.dto.AutoComponentDto;
 import ru.samsebemehanik.catalog.exception.ComponentNotFoundException;
 import ru.samsebemehanik.catalog.kafka.ComponentEventProducer;
@@ -81,4 +86,33 @@ public class AutoComponentServiceImpl implements AutoComponentService {
 
         return AutoComponentMapper.toDto(component);
     }
+    @Override
+    @Transactional(readOnly = true)
+    public AutoComponentPageResponse getAll(int page, int size) {
+        int normalizedPage = page < 1 ? 1 : page;
+        int normalizedSize = size < 1 ? 20 : size;
+
+        Page<AutoComponent> componentPage = autoComponentRepository.findAll(
+                PageRequest.of(normalizedPage - 1, normalizedSize)
+        );
+
+        return new AutoComponentPageResponse(
+                componentPage.getContent().stream()
+                        .map(AutoComponentMapper::toDto)
+                        .toList(),
+                normalizedPage,
+                normalizedSize,
+                componentPage.getTotalElements(),
+                componentPage.getTotalPages()
+        );
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<MenuResponse> getLeftMenu() {
+        return autoComponentRepository.findAll().stream()
+                .map(AutoComponentMapper::toMenuResponse)
+                .toList();
+    }
+
 }
