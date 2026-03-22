@@ -54,7 +54,7 @@ CREATE TABLE IF NOT EXISTS auto_component_relation (
 );
 
 
--- Outbox for transactional events
+-- Для транзакционных событий (kafka)
 CREATE TABLE IF NOT EXISTS outbox_event (
     id BIGSERIAL PRIMARY KEY,
     aggregate_type VARCHAR(100) NOT NULL,
