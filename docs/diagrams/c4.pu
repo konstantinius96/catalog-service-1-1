@@ -34,7 +34,7 @@ Rel(frontend, backend, "Использует", "HTTPS / JSON")
 Rel(frontend, backend, "Подписывается на события", " (/ws, /topic/components)")
 
 Rel(backend, postgreSQL, "Читает/Пишет")
-Rel(backend, mongoDB, "Читает/Пишет")
+Rel(backend, mongoDB, "Пишет")
 Rel(backend, kafka, "Публикует/читает события")
 
 @enduml
@@ -45,60 +45,75 @@ Rel(backend, kafka, "Публикует/читает события")
 
 title Ключевые бизнес-компоненты
 
-Person(client, "Клиент (Frontend / API consumer)", "Использует REST API и WebSocket")
+Person(client, "Клиент (Frontend / API consumer)", "Использует REST API и WebSocket/STOMP")
 
 Container_Boundary(backend, "Catalog Service (Spring Boot)") {
 
-    Component(apiControllers, "Business REST Controllers", "Spring Web", "AutoComponentController, FavouriteController")
+    Component(apiControllers, "REST Controllers", "Spring Web", "AutoComponentController, FavouriteController, LeftMenuController, UserController, HealthController")
 
-    Component(componentService, "AutoComponentServiceImpl", "Service", "Создание автокомпонентов")
+    Component(componentService, "AutoComponentServiceImpl", "Service", "CRUD автокомпонентов + формирование событий")
 
     Component(favouriteService, "FavouriteServiceImpl", "Service", "Добавление и получение избранного")
 
-    Component(versioningService, "AutoComponentVersioningService", "Service", "Версионирование описаний компонентов")
+    Component(outboxService, "OutboxService", "Service", "Запись ComponentUpdatedEvent в outbox_event")
 
-    Component(componentEventProducer, "ComponentEventProducer", "Spring Kafka Producer", "Публикация ComponentCreatedEvent в Kafka")
+    Component(outboxRelay, "OutboxRelayPublisher", "Scheduled Kafka Publisher", "Читает outbox_event и публикует в Kafka topic auto-component-updated")
 
-    Component(componentEventConsumer, "ComponentEventConsumer", "Spring Kafka Listener", "Читает component-events и отправляет в WebSocket")
+    Component(createdProducer, "ComponentEventProducer", "Kafka Producer", "Публикация ComponentCreatedEvent в topic component-events")
 
-    Component(websocketMessaging, "SimpMessagingTemplate", "Spring WebSocket", "Отправляет события в /topic/components")
+    Component(createdConsumer, "ComponentEventConsumer", "Kafka Listener","Читает component-events и отправляет в WebSocket /topic/components")
 
-    Component(mappers, "DTO Mappers", "AutoComponentMapper, FavouriteMapper", "Преобразование Entity ↔ DTO")
+    Component(versionService, "ComponentVersionService", "Kafka Listener + Mongo Service", "Читает auto-component-updated и сохраняет версии описаний")
+
+    Component(wsMessaging, "SimpMessagingTemplate", "Spring WebSocket", "Публикация в /topic/components")
+
+    Component(mappers, "Static DTO Mappers", "AutoComponentMapper, FavouriteMapper", "Преобразование Entity ↔ DTO (статические вызовы)")
 
     Component(componentRepo, "AutoComponentRepository", "Spring Data JPA", "CRUD для AutoComponent")
-
-    Component(favouriteRepo, "FavouriteRepository", "Spring Data JPA", "CRUD и выборка избранного по userId")
-
-    Component(versionRepo, "AutoComponentVersionRepository", "Spring Data MongoDB", "Хранение версий AutoComponentVersion")
+    Component(favouriteRepo, "FavouriteRepository", "Spring Data JPA", "CRUD и выборка избранного")
+    Component(userRepo, "UserRepository", "Spring Data JPA", "CRUD для User")
+    Component(outboxRepo, "OutboxEventRepository", "Spring Data JPA", "CRUD для outbox_event")
+    Component(descriptionVersionRepo, "AutoComponentDescriptionVersionRepository", "Spring Data MongoDB", "Хранение версий описаний")
+    Component(mongoTemplate, "MongoTemplate", "Spring Data MongoDB", "Счётчик версий в Mongo")
 }
 
-ContainerDb(postgres, "PostgreSQL", "Relational DB", "auto_component, favourites")
-ContainerDb(mongo, "MongoDB", "Document DB", "auto_component_versions")
-System_Ext(kafka, "Kafka", "topic: component-events")
+ContainerDb(postgres, "PostgreSQL", "Relational DB", "auto_component, favourites, users, outbox_event")
+ContainerDb(mongo, "MongoDB", "Document DB", "auto_component_description_versions, auto_component_version_counters")
+System_Ext(kafka, "Kafka", "topics: component-events, auto-component-updated")
 
 Rel(client, apiControllers, "Вызывает endpoints", "HTTP/JSON")
-Rel(client, websocketMessaging, "Получает события", "WebSocket/STOMP /topic/components")
+Rel(client, wsMessaging, "Получает события", "WebSocket/STOMP (/ws, /topic/components)")
 
 Rel(apiControllers, componentService, "Использует")
 Rel(apiControllers, favouriteService, "Использует")
+Rel(apiControllers, userRepo, "Читает пользователей (UserController)")
 
 Rel(componentService, componentRepo, "Сохраняет/читает AutoComponent")
+Rel(componentService, createdProducer, "Публикует событие при CREATE")
+Rel(componentService, outboxService, "Пишет событие при EDIT")
 Rel(componentService, mappers, "Формирует DTO")
-Rel(componentService, componentEventProducer, "Публикует событие после сохранения")
-
-Rel(componentEventProducer, kafka, "Отправляет ComponentCreatedEvent", "Spring Kafka")
-Rel(kafka, componentEventConsumer, "Доставляет ComponentCreatedEvent", "Spring Kafka Listener")
-Rel(componentEventConsumer, websocketMessaging, "Публикует в /topic/components")
 
 Rel(favouriteService, favouriteRepo, "Сохраняет/читает Favourite")
 Rel(favouriteService, componentRepo, "Проверяет существование компонента")
-Rel(favouriteService, mappers, "Формирует DTO")
+Rel(favouriteService, mappers, "Формирут DTO")
 
-Rel(versioningService, componentRepo, "Читает/обновляет компонент")
-Rel(versioningService, versionRepo, "Сохраняет версии")
+Rel(outboxService, outboxRepo, "Сохраняет outbox-событие")
+Rel(outboxRelay, outboxRepo, "Читает непубликованные / помечает статус")
+Rel(outboxRelay, kafka, "Публикует ComponentUpdatedEvent", "topic auto-component-updated")
+
+Rel(createdProducer, kafka, "Публикует ComponentCreatedEvent", "topic component-events")
+Rel(kafka, createdConsumer, "Доставляет ComponentCreatedEvent", "Kafka Listener")
+Rel(createdConsumer, wsMessaging, "Публикует в /topic/components")
+
+Rel(kafka, versionService, "Доставляет ComponentUpdatedEvent", "Kafka Listener")
+Rel(versionService, descriptionVersionRepo, "Сохраняет версии описаний")
+Rel(versionService, mongoTemplate, "Инкрементирует счётчик версий")
 
 Rel(componentRepo, postgres, "JPA/Hibernate")
 Rel(favouriteRepo, postgres, "JPA/Hibernate")
-Rel(versionRepo, mongo, "Spring Data MongoDB")
+Rel(userRepo, postgres, "JPA/Hibernate")
+Rel(outboxRepo, postgres, "JPA/Hibernate")
+Rel(descriptionVersionRepo, mongo, "Spring Data MongoDB")
+Rel(mongoTemplate, mongo, "Mongo operations")
 
 @enduml
