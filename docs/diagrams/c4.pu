@@ -5,26 +5,37 @@
 
 title Архитектура приложения СамСебеМеханик
 
-Person(user, "Пользователь", "Зарегистрированный пользователь системы")
+Person(user, "Пользователь", "Пользователь системы")
 
-System_Boundary(system, "ВЕБ-приложение") {
+System_Boundary(WebApp, "ВЕБ-приложение") {
 
-    Container(backend, "Backend API", "Spring Boot (Java)", "REST API + WebSocket/STOMP")
+    Container(frontend, "Frontend", "React")
+    
+    Container(backend, "Backend API", "Spring Boot (Java)", "REST API + WebSocket")
 
-    ContainerDb(postgres, "Main Database", "PostgreSQL", "Хранит пользователей, компоненты, изображения, связи, избранное")
+    Container(soapService, "SOAP Service", "Spring Boot", "SOAP API для чтения данных")
 
-    ContainerDb(mongo, "Version Storage", "MongoDB", "Хранит версии описаний компонентов")
+    ContainerDb(postgreSQL, "Main Database", "PostgreSQL", "Хранит пользователей, компоненты, изображения, связи, избранное")
 
+    ContainerDb(mongoDB, "Version Storage", "MongoDB", "Хранит версии описаний компонентов")
 }
 
 System_Ext(kafka, "Kafka", "Брокер событий")
 
-Rel(user, backend, "Использует", "HTTPS / JSON")
-Rel(user, backend, "Подписывается на события", "WebSocket / STOMP (/ws, /topic/components)")
+Person_Ext(soapClient, "SOAP клиент", "Тестовый клиент")
 
-Rel(backend, postgres, "Читает/Пишет", "JPA / Hibernate")
-Rel(backend, mongo, "Читает/Пишет", "Mongo Driver / Spring Data Mongo")
-Rel(backend, kafka, "Публикует/читает события", "Spring Kafka / topic: component-events")
+Rel(soapClient, soapService, "Вызывает")
+
+Rel(user, frontend, "Использует")
+
+Rel(soapService, postgreSQL, "Читает")
+
+Rel(frontend, backend, "Использует", "HTTPS / JSON")
+Rel(frontend, backend, "Подписывается на события", " (/ws, /topic/components)")
+
+Rel(backend, postgreSQL, "Читает/Пишет")
+Rel(backend, mongoDB, "Читает/Пишет")
+Rel(backend, kafka, "Публикует/читает события")
 
 @enduml
 
