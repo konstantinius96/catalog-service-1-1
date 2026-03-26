@@ -2,12 +2,13 @@ package ru.samsebemehanik.catalog.repository;
 
 import java.util.List;
 import java.util.UUID;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.query.Param;
+import ru.samsebemehanik.catalog.domain.component.AutoComponent;
 import ru.samsebemehanik.catalog.repository.projection.ComponentRelationFullRow;
 
-public interface ComponentRelationsViewRepository extends Repository<Object, UUID> {
+public interface ComponentRelationsViewRepository extends JpaRepository<AutoComponent, UUID> {
 
     @Query(value = """
             SELECT
