@@ -79,3 +79,15 @@ CREATE INDEX IF NOT EXISTS idx_outbox_event_unpublished
 -- Users
 INSERT INTO users (login, password_hash, role)
 VALUES ('alice', 'hash1', 'ADMIN');
+
+
+CREATE OR REPLACE VIEW component_relations_full AS
+SELECT
+    r.relation_type,
+    from_c.id AS from_id,
+    from_c.name AS from_name,
+    to_c.id AS to_id,
+    to_c.name AS to_name
+FROM auto_component_relation r
+JOIN auto_component from_c ON from_c.id = r.from_component
+JOIN auto_component to_c ON to_c.id = r.to_component;
