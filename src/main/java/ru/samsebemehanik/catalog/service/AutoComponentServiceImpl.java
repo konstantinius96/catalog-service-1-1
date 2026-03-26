@@ -1,6 +1,9 @@
 package ru.samsebemehanik.catalog.service;
 
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -14,10 +17,14 @@ import ru.samsebemehanik.catalog.dto.ComponentEditRequest;
 import ru.samsebemehanik.catalog.dto.ComponentEditResponse;
 import ru.samsebemehanik.catalog.dto.MenuResponse;
 import ru.samsebemehanik.catalog.dto.AutoComponentDto;
+import ru.samsebemehanik.catalog.dto.ComponentRelationsDto;
+import ru.samsebemehanik.catalog.dto.RelatedComponentDto;
 import ru.samsebemehanik.catalog.exception.ComponentNotFoundException;
 import ru.samsebemehanik.catalog.kafka.ComponentEventProducer;
 import ru.samsebemehanik.catalog.mapper.AutoComponentMapper;
 import ru.samsebemehanik.catalog.repository.AutoComponentRepository;
+import ru.samsebemehanik.catalog.repository.ComponentRelationsViewRepository;
+import ru.samsebemehanik.catalog.repository.projection.ComponentRelationFullRow;
 import ru.samsebemehanik.catalog.service.OutboxService.AutoComponentStateSnapshot;
 
 @Service
@@ -26,15 +33,18 @@ public class AutoComponentServiceImpl implements AutoComponentService {
     private final AutoComponentRepository autoComponentRepository;
     private final ComponentEventProducer componentEventProducer;
     private final OutboxService outboxService;
+    private final ComponentRelationsViewRepository componentRelationsViewRepository;
 
     public AutoComponentServiceImpl(
             AutoComponentRepository autoComponentRepository,
             ComponentEventProducer componentEventProducer,
-            OutboxService outboxService
+            OutboxService outboxService,
+            ComponentRelationsViewRepository componentRelationsViewRepository
     ) {
         this.autoComponentRepository = autoComponentRepository;
         this.componentEventProducer = componentEventProducer;
         this.outboxService = outboxService;
+        this.componentRelationsViewRepository = componentRelationsViewRepository;
     }
 
     @Override
@@ -84,8 +94,41 @@ public class AutoComponentServiceImpl implements AutoComponentService {
         AutoComponent component = autoComponentRepository.findById(id)
                 .orElseThrow(() -> new ComponentNotFoundException("Component with id=" + id + " was not found"));
 
-        return AutoComponentMapper.toDto(component);
+        ComponentRelationsDto relations = mapRelations(id);
+        return AutoComponentMapper.toDto(component, relations);
     }
+
+    private ComponentRelationsDto mapRelations(UUID componentId) {
+        List<ComponentRelationFullRow> relationRows = componentRelationsViewRepository.findByComponentId(componentId);
+
+        List<RelatedComponentDto> partOf = new ArrayList<>();
+        List<RelatedComponentDto> hasParts = new ArrayList<>();
+        List<RelatedComponentDto> interactsWith = new ArrayList<>();
+
+        Set<UUID> partOfIds = new LinkedHashSet<>();
+        Set<UUID> hasPartIds = new LinkedHashSet<>();
+        Set<UUID> interactsWithIds = new LinkedHashSet<>();
+
+        for (ComponentRelationFullRow row : relationRows) {
+            if ("PART_OF".equals(row.getRelationType())) {
+                if (componentId.equals(row.getFromId()) && partOfIds.add(row.getToId())) {
+                    partOf.add(new RelatedComponentDto(row.getToId(), row.getToName()));
+                }
+                if (componentId.equals(row.getToId()) && hasPartIds.add(row.getFromId())) {
+                    hasParts.add(new RelatedComponentDto(row.getFromId(), row.getFromName()));
+                }
+            }
+
+            if ("INTERACTS_WITH".equals(row.getRelationType())
+                    && componentId.equals(row.getFromId())
+                    && interactsWithIds.add(row.getToId())) {
+                interactsWith.add(new RelatedComponentDto(row.getToId(), row.getToName()));
+            }
+        }
+
+        return new ComponentRelationsDto(partOf, hasParts, interactsWith);
+    }
+
     @Override
     @Transactional(readOnly = true)
     public AutoComponentPageResponse getAll(int page, int size) {

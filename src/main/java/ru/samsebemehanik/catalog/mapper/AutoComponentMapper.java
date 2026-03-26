@@ -4,6 +4,7 @@ import ru.samsebemehanik.catalog.domain.component.AutoComponent;
 import ru.samsebemehanik.catalog.dto.AutoComponentDto;
 import ru.samsebemehanik.catalog.dto.ComponentCreateResponse;
 import ru.samsebemehanik.catalog.dto.ComponentEditResponse;
+import ru.samsebemehanik.catalog.dto.ComponentRelationsDto;
 import ru.samsebemehanik.catalog.dto.MenuResponse;
 
 public class AutoComponentMapper {
@@ -15,6 +16,17 @@ public class AutoComponentMapper {
                 component.getDescription(),
                 component.getSpecification(),
                 component.getSpecificationJsonB()
+        );
+    }
+
+    public static AutoComponentDto toDto(AutoComponent component, ComponentRelationsDto relations) {
+        return new AutoComponentDto(
+                component.getId(),
+                component.getName(),
+                component.getDescription(),
+                component.getSpecification(),
+                component.getSpecificationJsonB(),
+                relations
         );
     }
 
