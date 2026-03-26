@@ -243,6 +243,33 @@ components:
                 specification_jsonB:
                     type: object
                     additionalProperties: true
+                    
+                relations:
+                    type: object
+                    properties:
+                        partOf:
+                            type: array
+                            items:
+                                $ref: '#/components/schemas/RelatedComponent'
+                                
+                        hasParts:
+                            type: array
+                            items:
+                                $ref: '#/components/schemas/RelatedComponent'
+                                
+                        interactsWith:
+                            type: array
+                            items:
+                                $ref: '#/components/schemas/RelatedComponent'
+        RelatedComponent:
+            type: object
+            properties:
+                id:
+                    type: string
+                    format: uuid
+                    readOnly: true
+                name:
+                    type: string
         MenuResponse:
             type: object
             properties:
