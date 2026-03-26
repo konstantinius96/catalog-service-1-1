@@ -15,12 +15,28 @@ public class AutoComponentDto {
     @JsonProperty("specification_jsonB")
     private JsonNode specificationJsonB;
 
-    public AutoComponentDto(UUID id, String name, String description, String specification, JsonNode specificationJsonB) {
+    private ComponentRelationsDto relations;
+
+    public AutoComponentDto(UUID id,
+                            String name,
+                            String description,
+                            String specification,
+                            JsonNode specificationJsonB,
+                            ComponentRelationsDto relations) {
         this.id = id;
         this.name = name;
         this.description = description;
         this.specification = specification;
         this.specificationJsonB = specificationJsonB;
+        this.relations = relations;
+    }
+
+    public AutoComponentDto(UUID id,
+                            String name,
+                            String description,
+                            String specification,
+                            JsonNode specificationJsonB) {
+        this(id, name, description, specification, specificationJsonB, new ComponentRelationsDto());
     }
 
     public UUID getId() {
@@ -41,5 +57,9 @@ public class AutoComponentDto {
 
     public JsonNode getSpecificationJsonB() {
         return specificationJsonB;
+    }
+
+    public ComponentRelationsDto getRelations() {
+        return relations;
     }
 }
