@@ -1,6 +1,6 @@
 package ru.samsebemehanik.catalog.domain.user;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -10,23 +10,24 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "users")
  public class User {
  
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-     private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(columnDefinition = "UUID", updatable = false, nullable = false)
+     private UUID id;
 
     @Column(nullable = false, unique = true, length = 120)
      private String login;
 
-    @JsonProperty("password_hash")
+    @JsonIgnore
     @Column(nullable = false, length = 255)
      private String passwordHash;
 
-    @JsonProperty("registration_date")
     @Column(name = "registration_date", nullable = false)
      private LocalDateTime registrationDate;
   
@@ -48,7 +49,7 @@ import java.time.LocalDateTime;
         this.role = role;
     }
 
-    public Long getId() {
+    public UUID getId() {
         return id;
     }
 
