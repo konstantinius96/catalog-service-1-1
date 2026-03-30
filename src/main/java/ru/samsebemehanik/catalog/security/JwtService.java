@@ -6,6 +6,7 @@ import io.jsonwebtoken.security.Keys;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Date;
+import java.util.UUID;
 import javax.crypto.SecretKey;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -28,11 +29,11 @@ public class JwtService {
         this.refreshTokenTtlSeconds = refreshTokenTtlSeconds;
     }
 
-    public String createAccessToken(Long userId, String login, RoleType role) {
+    public String createAccessToken(UUID userId, String login, RoleType role) {
         return createToken(userId, login, role, "access", accessTokenTtlSeconds);
     }
 
-    public String createRefreshToken(Long userId, String login, RoleType role) {
+    public String createRefreshToken(UUID userId, String login, RoleType role) {
         return createToken(userId, login, role, "refresh", refreshTokenTtlSeconds);
     }
 
@@ -47,17 +48,17 @@ public class JwtService {
             throw new IllegalArgumentException("Invalid token type");
         }
 
-        Long userId = claims.get("uid", Long.class);
+        String userId = claims.get("uid", String.class);
         String login = claims.getSubject();
         String role = claims.get("role", String.class);
-        return new AuthUserPrincipal(userId, login, RoleType.valueOf(role));
+        return new AuthUserPrincipal(UUID.fromString(userId), login, RoleType.valueOf(role));
     }
 
-    private String createToken(Long userId, String login, RoleType role, String type, long ttlSeconds) {
+    private String createToken(UUID userId, String login, RoleType role, String type, long ttlSeconds) {
         Instant now = Instant.now();
         return Jwts.builder()
                 .subject(login)
-                .claim("uid", userId)
+                .claim("uid", userId.toString())
                 .claim("role", role.name())
                 .claim("type", type)
                 .issuedAt(Date.from(now))
