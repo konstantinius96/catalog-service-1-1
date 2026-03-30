@@ -185,7 +185,7 @@ paths:
                                 $ref: '#/components/schemas/AuthResponse' 
                 '400':
                     description: Ошибка валидации данных
-                '404':
+                '409':
                     description: Пользователь с таким логином уже существует
                     
     /auth/login:
@@ -227,6 +227,14 @@ paths:
                                 $ref: '#/components/schemas/TokenResponse' 
                 '401':
                     description: Невалидный refresh токен
+                    
+    /auth/logout:
+        post:
+            summary: Выход из системы
+            tags: [Auth]
+            responses:
+                '204':
+                    description: Выход из системы произведен успешно
                     
     /users/me:
         get:
@@ -403,6 +411,11 @@ components:
                 password:
                     type: string
                     format: password
+                    minLength: 6
+                    maxLength: 24
+                    pattern: "^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{6,64}$"
+                    description: >
+                        Пароль должен содержать минимум 6 символов, хотя бы одну букву и одну цифру
                     
         LoginRequest:
             type: object
