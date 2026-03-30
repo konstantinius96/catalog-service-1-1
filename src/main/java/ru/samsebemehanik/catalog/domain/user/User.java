@@ -1,6 +1,6 @@
 package ru.samsebemehanik.catalog.domain.user;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -22,11 +22,10 @@ import java.time.LocalDateTime;
     @Column(nullable = false, unique = true, length = 120)
      private String login;
 
-    @JsonProperty("password_hash")
+    @JsonIgnore
     @Column(nullable = false, length = 255)
      private String passwordHash;
 
-    @JsonProperty("registration_date")
     @Column(name = "registration_date", nullable = false)
      private LocalDateTime registrationDate;
   

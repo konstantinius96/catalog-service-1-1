@@ -212,12 +212,6 @@ paths:
         post:
             summary: Обновление access токена
             tags: [Auth]
-            requestBody:
-                required: true
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/RefreshRequest'
             responses:
                 '200':
                     description: Токен успешно обновлен
@@ -240,19 +234,15 @@ paths:
         get:
             summary: Данные пользователя
             tags: [Пользователь]
-            requestBody:
-                required: true
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/UserResponse'
+            security:
+                - bearerAuth: []
             responses:
                 '200':
-                    description: Токен успешно обновлен
+                    description: Данные пользователя успешно получены
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/TokenResponse' 
+                                $ref: '#/components/schemas/UserResponse'
                 '401':
                     description: Не авторизован
 
@@ -429,20 +419,10 @@ components:
                     type: string
                     format: password
 
-        RefreshRequest:
-            type: object
-            required:
-                - refreshToken
-            properties:
-                refreshToken:
-                    type: string
-
         AuthResponse:
             type: object
             properties:
                 accessToken:
-                    type: string
-                refreshToken:
                     type: string
                 user:
                     $ref: '#/components/schemas/UserResponse'
@@ -451,8 +431,6 @@ components:
             type: object
             properties:
                 accessToken:
-                    type: string
-                refreshToken:
                     type: string
 
         UserResponse:
