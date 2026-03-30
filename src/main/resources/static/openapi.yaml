@@ -404,7 +404,7 @@ components:
                     type: string
                     format: password
                     
-        LogonRequest:
+        LoginRequest:
             type: object
             required:
                 - login
@@ -415,7 +415,7 @@ components:
                 password:
                     type: string
                     format: password
-                    
+
         RefreshRequest:
             type: object
             required:
@@ -431,7 +431,7 @@ components:
                     type: string
                 refreshToken:
                     type: string
-                user: string
+                user:
                     $ref: '#/components/schemas/UserResponse'
 
         TokenResponse:
