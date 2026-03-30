@@ -229,7 +229,7 @@ paths:
                     description: Невалидный refresh токен
                     
     /users/me:
-        post:
+        get:
             summary: Данные пользователя
             tags: [Пользователь]
             requestBody:
