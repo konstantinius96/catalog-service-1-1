@@ -10,6 +10,17 @@ info:
         name: MIT
 servers: 
     - url: http://localhost:8080
+
+tags:
+  - name: Auth
+    description: Аутентификация
+  - name: Компонент
+    description: 23331
+  - name: Меню
+    description: Менюшка слева
+  - name: User
+    description: Менюшка слева
+
 paths: 
     /api/v1/autocomponents:
         post:
