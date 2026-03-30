@@ -13,13 +13,13 @@ servers:
 
 tags:
   - name: Auth
-    description: Аутентификация
+    description: Аутентификация и авторизация
   - name: Компонент
-    description: 23331
+    description: Действия с компонентами
   - name: Меню
     description: Менюшка слева
-  - name: User
-    description: Менюшка слева
+  - name: Пользователь
+    description: Работа с пользователем
 
 paths: 
     /api/v1/autocomponents:
@@ -165,6 +165,89 @@ paths:
                                 type: array
                                 items:
                                     $ref: '#/components/schemas/MenuResponse'
+                                    
+    /auth/register:
+        post:
+            summary: Регистрация нового пользователя
+            tags: [Auth]
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/RegisterRequest'
+            responses:
+                '201':
+                    description: Пользователь успешно зарегистрирован
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/AuthResponse' 
+                '400':
+                    description: Ошибка валидации данных
+                '404':
+                    description: Пользователь с таким логином уже существует
+                    
+    /auth/login:
+        post:
+            summary: Авторизация пользователя
+            tags: [Auth]
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/LoginRequest'
+            responses:
+                '200':
+                    description: Успешная авторизация
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/AuthResponse' 
+                '401':
+                    description: Неверный логин или пароль
+
+    /auth/refresh:
+        post:
+            summary: Обновление access токена
+            tags: [Auth]
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/RefreshRequest'
+            responses:
+                '200':
+                    description: Токен успешно обновлен
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/TokenResponse' 
+                '401':
+                    description: Невалидный refresh токен
+                    
+    /users/me:
+        post:
+            summary: Данные пользователя
+            tags: [Пользователь]
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/UserResponse'
+            responses:
+                '200':
+                    description: Токен успешно обновлен
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/TokenResponse' 
+                '401':
+                    description: Не авторизован
+
 components:
     schemas:
         ComponentCreateRequest:
@@ -308,6 +391,69 @@ components:
                 totalPages:
                     type: integer
                     example: 7
+                    
+        RegisterRequest:
+            type: object
+            required:
+                - login
+                - password
+            properties:
+                login:
+                    type: string
+                password:
+                    type: string
+                    format: password
+                    
+        LogonRequest:
+            type: object
+            required:
+                - login
+                - password
+            properties:
+                login:
+                    type: string
+                password:
+                    type: string
+                    format: password
+                    
+        RefreshRequest:
+            type: object
+            required:
+                - refreshToken
+            properties:
+                refreshToken:
+                    type: string
+
+        AuthResponse:
+            type: object
+            properties:
+                accessToken:
+                    type: string
+                refreshToken:
+                    type: string
+                user: string
+                    $ref: '#/components/schemas/UserResponse'
+
+        TokenResponse:
+            type: object
+            properties:
+                accessToken:
+                    type: string
+                refreshToken:
+                    type: string
+
+        UserResponse:
+            type: object
+            properties:
+                id:
+                    type: string
+                    format: uuid
+                login:
+                    type: string
+                role:
+                    type: string
+                    enum: [USER, ADMIN]
+                    
     securitySchemes:
         bearerAuth:
             type: http
