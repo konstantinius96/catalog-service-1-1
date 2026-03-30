@@ -240,12 +240,8 @@ paths:
         get:
             summary: Данные пользователя
             tags: [Пользователь]
-            requestBody:
-                required: true
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/UserResponse'
+            sequrity:
+                - bearerAuth: []
             responses:
                 '200':
                     description: Токен успешно обновлен
