@@ -413,7 +413,7 @@ components:
                     format: password
                     minLength: 6
                     maxLength: 24
-                    pattern: "^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{6,64}$"
+                    pattern: "^(?=.*[A-Za-z])(?=.*\\d).{6,64}$"
                     description: >
                         Пароль должен содержать минимум 6 символов, хотя бы одну букву и одну цифру
                     
