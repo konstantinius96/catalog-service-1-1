@@ -173,28 +173,32 @@ public class AutoComponentServiceImpl implements AutoComponentService {
         }
 
         long total = autoComponentRepository.countByNameContainingIgnoreCase(normalizedQuery);
-        OffsetLimitPageable pageable = new OffsetLimitPageable(offset, limit, Sort.by(Sort.Direction.ASC, "name"));
+        int effectiveOffset = offset;
+        if (total > 0 && offset >= total) {
+            effectiveOffset = 0;
+            log.info(
+                    "Offset is outside result window, fallback to first page; query='{}', requestedOffset={}, effectiveOffset={}, limit={}, total={}",
+                    normalizedQuery, offset, effectiveOffset, limit, total
+            );
+        }
+
+        OffsetLimitPageable pageable = new OffsetLimitPageable(effectiveOffset, limit, Sort.by(Sort.Direction.ASC, "name"));
         List<SearchItem> items = autoComponentRepository.findByNameContainingIgnoreCase(normalizedQuery, pageable).stream()
                 .map(component -> new SearchItem(component.getId(), component.getName(), component.getDescription()))
                 .toList();
 
         String sqlLikePattern = "%" + normalizedQuery + "%";
-        if (total > 0 && items.isEmpty() && offset < total) {
+        if (total > 0 && items.isEmpty() && effectiveOffset < total) {
             log.warn(
                     "Search returned empty items for non-terminal page; query='{}', likePattern='{}', limit={}, offset={}, total={}",
-                    normalizedQuery, sqlLikePattern, limit, offset, total
-            );
-        } else if (total > 0 && items.isEmpty()) {
-            log.info(
-                    "Search returned empty items because offset is outside result window; query='{}', likePattern='{}', limit={}, offset={}, total={}",
-                    normalizedQuery, sqlLikePattern, limit, offset, total
+                    normalizedQuery, sqlLikePattern, limit, effectiveOffset, total
             );
         } else {
             log.info("Search completed; query='{}', likePattern='{}', limit={}, offset={}, total={}, items={}",
-                    normalizedQuery, sqlLikePattern, limit, offset, total, items.size());
+                    normalizedQuery, sqlLikePattern, limit, effectiveOffset, total, items.size());
         }
 
-        boolean hasMore = total > (long) offset + items.size();
+        boolean hasMore = total > (long) effectiveOffset + items.size();
         return new SearchResponse(total, hasMore, items);
     }
 

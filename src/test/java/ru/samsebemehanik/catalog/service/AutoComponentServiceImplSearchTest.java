@@ -81,16 +81,22 @@ class AutoComponentServiceImplSearchTest {
     }
 
     @Test
-    void shouldReturnEmptyItemsWhenOffsetIsOutsideResultWindow() {
+    void shouldFallbackToFirstPageWhenOffsetIsOutsideResultWindow() {
         when(autoComponentRepository.countByNameContainingIgnoreCase("По")).thenReturn(4L);
+        AutoComponent item1 = new AutoComponent("Поршень", "desc-1", null, null);
+        AutoComponent item2 = new AutoComponent("Подшипник", "desc-2", null, null);
         when(autoComponentRepository.findByNameContainingIgnoreCase(eq("По"), any()))
-                .thenReturn(List.of());
+                .thenReturn(List.of(item1, item2));
 
         SearchResponse response = service.searchByName("По", 5, 50);
 
         assertEquals(4L, response.getTotal());
-        assertFalse(response.isHasMore());
-        assertTrue(response.getItems().isEmpty());
+        assertTrue(response.isHasMore());
+        assertEquals(2, response.getItems().size());
+
+        ArgumentCaptor<OffsetLimitPageable> captor = ArgumentCaptor.forClass(OffsetLimitPageable.class);
+        verify(autoComponentRepository).findByNameContainingIgnoreCase(eq("По"), captor.capture());
+        assertEquals(0, captor.getValue().getOffset());
     }
 
     @Test
