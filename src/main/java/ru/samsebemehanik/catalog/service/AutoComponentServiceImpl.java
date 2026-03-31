@@ -7,7 +7,6 @@ import java.util.Set;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.samsebemehanik.catalog.domain.component.AutoComponent;
@@ -27,7 +26,6 @@ import ru.samsebemehanik.catalog.kafka.ComponentEventProducer;
 import ru.samsebemehanik.catalog.mapper.AutoComponentMapper;
 import ru.samsebemehanik.catalog.repository.AutoComponentRepository;
 import ru.samsebemehanik.catalog.repository.ComponentRelationsViewRepository;
-import ru.samsebemehanik.catalog.repository.OffsetLimitPageable;
 import ru.samsebemehanik.catalog.repository.projection.ComponentRelationFullRow;
 import ru.samsebemehanik.catalog.service.OutboxService.AutoComponentStateSnapshot;
 
@@ -168,14 +166,8 @@ public class AutoComponentServiceImpl implements AutoComponentService {
             throw new IllegalArgumentException("offset must be greater than or equal to 0");
         }
 
-<<<<<<< codex/implement-search-contract-endpoint-fuxd5k
-        long total = autoComponentRepository.countByNameContainingIgnoreCase(normalizedQuery);
-        OffsetLimitPageable pageable = new OffsetLimitPageable(offset, limit, Sort.by(Sort.Direction.ASC, "name"));
-        List<SearchItem> items = autoComponentRepository.findByNameContainingIgnoreCase(normalizedQuery, pageable).stream()
-=======
         long total = autoComponentRepository.countByNameSearch(normalizedQuery);
         List<SearchItem> items = autoComponentRepository.searchByName(normalizedQuery, limit, offset).stream()
->>>>>>> master
                 .map(component -> new SearchItem(component.getId(), component.getName(), component.getDescription()))
                 .toList();
 
