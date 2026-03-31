@@ -168,9 +168,14 @@ public class AutoComponentServiceImpl implements AutoComponentService {
             throw new IllegalArgumentException("offset must be greater than or equal to 0");
         }
 
+<<<<<<< codex/implement-search-contract-endpoint-fuxd5k
         long total = autoComponentRepository.countByNameContainingIgnoreCase(normalizedQuery);
         OffsetLimitPageable pageable = new OffsetLimitPageable(offset, limit, Sort.by(Sort.Direction.ASC, "name"));
         List<SearchItem> items = autoComponentRepository.findByNameContainingIgnoreCase(normalizedQuery, pageable).stream()
+=======
+        long total = autoComponentRepository.countByNameSearch(normalizedQuery);
+        List<SearchItem> items = autoComponentRepository.searchByName(normalizedQuery, limit, offset).stream()
+>>>>>>> master
                 .map(component -> new SearchItem(component.getId(), component.getName(), component.getDescription()))
                 .toList();
 
