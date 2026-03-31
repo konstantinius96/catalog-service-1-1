@@ -20,6 +20,8 @@ tags:
     description: Менюшка слева
   - name: Пользователь
     description: Работа с пользователем
+  - name: Главная
+    description: Главная страница
 
 paths: 
     /api/v1/autocomponents:
@@ -245,6 +247,50 @@ paths:
                                 $ref: '#/components/schemas/UserResponse'
                 '401':
                     description: Не авторизован
+                    
+    /api/v1/search:
+        get:
+            summary: Поиск компонентов по названию
+            tags: [Главная]
+            parameters:
+                - name: query
+                  in: query
+                  required: true
+                  description: Поисковая строка (минимум 2 символа)
+                  schema:
+                    type: string
+                    minLength: 2
+                    example: "По"
+
+                - name: limit
+                  in: query
+                  required: false
+                  description: Максимальное кол-во элементов
+                  schema: 
+                    type: integer
+                    minimum: 1
+                    maximum: 50
+                    default: 5
+                    example: 5
+
+                - name: offset
+                  in: query
+                  required: false
+                  description: Смещение для пагинации
+                  schema: 
+                    type: integer
+                    minimum: 0
+                    default: 0
+                    example: 50
+            responses:
+                '200':
+                    description: Успешный результат поиска
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/SearchResponse'
+                '400':
+                    description: Некорректный запрос
 
 components:
     schemas:
@@ -444,6 +490,37 @@ components:
                 role:
                     type: string
                     enum: [USER, ADMIN]
+                    
+        SearchResponse:
+            type: object
+            required:
+              - total
+              - items
+            properties:
+                total:
+                    type: integer
+                    description: Общее кол-во найденных элементов
+                    example: 12
+                    
+                items:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/SearchItem'
+
+        SearchItem:
+            type: object
+            required:
+              - id
+              - name
+              - description
+            properties:
+                id:
+                    type: string
+                    format: uuid
+                name:
+                    type: string
+                description:
+                    type: string
                     
     securitySchemes:
         bearerAuth:
