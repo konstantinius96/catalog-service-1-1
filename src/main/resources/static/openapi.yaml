@@ -256,7 +256,7 @@ paths:
                 - name: query
                   in: query
                   required: true
-                  description: Поисковая строка (минимум 2 символа)
+                  description: Поисковая строка (минимум 2 символа после trim)
                   schema:
                     type: string
                     minLength: 2
@@ -495,12 +495,18 @@ components:
             type: object
             required:
               - total
+              - hasMore
               - items
             properties:
                 total:
                     type: integer
                     description: Общее кол-во найденных элементов
                     example: 12
+
+                hasMore:
+                    type: boolean
+                    description: Есть ли ещё элементы за пределами текущей страницы
+                    example: true
                     
                 items:
                   type: array
@@ -521,6 +527,7 @@ components:
                     type: string
                 description:
                     type: string
+                    nullable: true
                     
     securitySchemes:
         bearerAuth:

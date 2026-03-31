@@ -19,6 +19,8 @@ import ru.samsebemehanik.catalog.dto.MenuResponse;
 import ru.samsebemehanik.catalog.dto.AutoComponentDto;
 import ru.samsebemehanik.catalog.dto.ComponentRelationsDto;
 import ru.samsebemehanik.catalog.dto.RelatedComponentDto;
+import ru.samsebemehanik.catalog.dto.SearchItem;
+import ru.samsebemehanik.catalog.dto.SearchResponse;
 import ru.samsebemehanik.catalog.exception.ComponentNotFoundException;
 import ru.samsebemehanik.catalog.kafka.ComponentEventProducer;
 import ru.samsebemehanik.catalog.mapper.AutoComponentMapper;
@@ -148,6 +150,29 @@ public class AutoComponentServiceImpl implements AutoComponentService {
                 componentPage.getTotalElements(),
                 componentPage.getTotalPages()
         );
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public SearchResponse searchByName(String query, int limit, int offset) {
+        String normalizedQuery = query == null ? "" : query.trim();
+        if (normalizedQuery.length() < 2) {
+            throw new IllegalArgumentException("query must contain at least 2 characters");
+        }
+        if (limit < 1 || limit > 50) {
+            throw new IllegalArgumentException("limit must be between 1 and 50");
+        }
+        if (offset < 0) {
+            throw new IllegalArgumentException("offset must be greater than or equal to 0");
+        }
+
+        long total = autoComponentRepository.countByNameSearch(normalizedQuery);
+        List<SearchItem> items = autoComponentRepository.searchByName(normalizedQuery, limit, offset).stream()
+                .map(component -> new SearchItem(component.getId(), component.getName(), component.getDescription()))
+                .toList();
+
+        boolean hasMore = total > (long) offset + items.size();
+        return new SearchResponse(total, hasMore, items);
     }
 
     @Override
