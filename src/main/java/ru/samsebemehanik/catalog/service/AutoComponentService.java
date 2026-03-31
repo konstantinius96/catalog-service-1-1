@@ -8,6 +8,7 @@ import ru.samsebemehanik.catalog.dto.ComponentEditRequest;
 import ru.samsebemehanik.catalog.dto.ComponentEditResponse;
 import ru.samsebemehanik.catalog.dto.AutoComponentDto;
 import ru.samsebemehanik.catalog.dto.MenuResponse;
+import ru.samsebemehanik.catalog.dto.SearchResponse;
 
 import java.util.List;
 
@@ -20,6 +21,8 @@ public interface AutoComponentService {
     AutoComponentDto getById(UUID id);
 
     AutoComponentPageResponse getAll(int page, int size);
+
+    SearchResponse searchByName(String query, int limit, int offset);
 
     List<MenuResponse> getLeftMenu();
 }
