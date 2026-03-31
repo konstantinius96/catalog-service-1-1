@@ -6,9 +6,11 @@ import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.kafka.config.KafkaListenerEndpointRegistry;
 import org.springframework.kafka.listener.MessageListenerContainer;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 @Component
+@Profile("kafka-debug")
 public class KafkaListenerStartupLogger {
 
     private static final Logger log = LoggerFactory.getLogger(KafkaListenerStartupLogger.class);

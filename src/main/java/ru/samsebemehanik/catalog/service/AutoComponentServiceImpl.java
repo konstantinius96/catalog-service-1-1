@@ -5,6 +5,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -33,6 +35,8 @@ import ru.samsebemehanik.catalog.service.OutboxService.AutoComponentStateSnapsho
 
 @Service
 public class AutoComponentServiceImpl implements AutoComponentService {
+
+    private static final Logger log = LoggerFactory.getLogger(AutoComponentServiceImpl.class);
 
     private final AutoComponentRepository autoComponentRepository;
     private final ComponentEventProducer componentEventProducer;
@@ -173,6 +177,14 @@ public class AutoComponentServiceImpl implements AutoComponentService {
         List<SearchItem> items = autoComponentRepository.findByNameContainingIgnoreCase(normalizedQuery, pageable).stream()
                 .map(component -> new SearchItem(component.getId(), component.getName(), component.getDescription()))
                 .toList();
+
+        if (total > 0 && items.isEmpty()) {
+            log.warn("Search returned empty items despite total > 0; query='{}', limit={}, offset={}, total={}",
+                    normalizedQuery, limit, offset, total);
+        } else {
+            log.info("Search completed; query='{}', limit={}, offset={}, total={}, items={}",
+                    normalizedQuery, limit, offset, total, items.size());
+        }
 
         boolean hasMore = total > (long) offset + items.size();
         return new SearchResponse(total, hasMore, items);
