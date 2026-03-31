@@ -81,6 +81,19 @@ class AutoComponentServiceImplSearchTest {
     }
 
     @Test
+    void shouldReturnEmptyItemsWhenOffsetIsOutsideResultWindow() {
+        when(autoComponentRepository.countByNameContainingIgnoreCase("По")).thenReturn(4L);
+        when(autoComponentRepository.findByNameContainingIgnoreCase(eq("По"), any()))
+                .thenReturn(List.of());
+
+        SearchResponse response = service.searchByName("По", 5, 50);
+
+        assertEquals(4L, response.getTotal());
+        assertFalse(response.isHasMore());
+        assertTrue(response.getItems().isEmpty());
+    }
+
+    @Test
     void shouldValidateQueryLength() {
         IllegalArgumentException exception = assertThrows(
                 IllegalArgumentException.class,

@@ -178,12 +178,20 @@ public class AutoComponentServiceImpl implements AutoComponentService {
                 .map(component -> new SearchItem(component.getId(), component.getName(), component.getDescription()))
                 .toList();
 
-        if (total > 0 && items.isEmpty()) {
-            log.warn("Search returned empty items despite total > 0; query='{}', limit={}, offset={}, total={}",
-                    normalizedQuery, limit, offset, total);
+        String sqlLikePattern = "%" + normalizedQuery + "%";
+        if (total > 0 && items.isEmpty() && offset < total) {
+            log.warn(
+                    "Search returned empty items for non-terminal page; query='{}', likePattern='{}', limit={}, offset={}, total={}",
+                    normalizedQuery, sqlLikePattern, limit, offset, total
+            );
+        } else if (total > 0 && items.isEmpty()) {
+            log.info(
+                    "Search returned empty items because offset is outside result window; query='{}', likePattern='{}', limit={}, offset={}, total={}",
+                    normalizedQuery, sqlLikePattern, limit, offset, total
+            );
         } else {
-            log.info("Search completed; query='{}', limit={}, offset={}, total={}, items={}",
-                    normalizedQuery, limit, offset, total, items.size());
+            log.info("Search completed; query='{}', likePattern='{}', limit={}, offset={}, total={}, items={}",
+                    normalizedQuery, sqlLikePattern, limit, offset, total, items.size());
         }
 
         boolean hasMore = total > (long) offset + items.size();
