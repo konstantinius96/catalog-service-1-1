@@ -57,6 +57,16 @@ public class GlobalExceptionHandler {
                 ));
     }
 
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ComponentErrorResponse> handleIllegalArgument(IllegalArgumentException exception) {
+        return ResponseEntity.badRequest()
+                .body(new ComponentErrorResponse(
+                        "VALIDATION_ERROR",
+                        "Request validation failed",
+                        List.of(exception.getMessage())
+                ));
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ComponentErrorResponse> handleUnexpected(Exception exception) {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)

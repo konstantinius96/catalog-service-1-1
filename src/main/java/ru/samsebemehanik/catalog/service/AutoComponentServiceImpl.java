@@ -5,8 +5,11 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.samsebemehanik.catalog.domain.component.AutoComponent;
@@ -19,16 +22,21 @@ import ru.samsebemehanik.catalog.dto.MenuResponse;
 import ru.samsebemehanik.catalog.dto.AutoComponentDto;
 import ru.samsebemehanik.catalog.dto.ComponentRelationsDto;
 import ru.samsebemehanik.catalog.dto.RelatedComponentDto;
+import ru.samsebemehanik.catalog.dto.SearchItem;
+import ru.samsebemehanik.catalog.dto.SearchResponse;
 import ru.samsebemehanik.catalog.exception.ComponentNotFoundException;
 import ru.samsebemehanik.catalog.kafka.ComponentEventProducer;
 import ru.samsebemehanik.catalog.mapper.AutoComponentMapper;
 import ru.samsebemehanik.catalog.repository.AutoComponentRepository;
 import ru.samsebemehanik.catalog.repository.ComponentRelationsViewRepository;
+import ru.samsebemehanik.catalog.repository.OffsetLimitPageable;
 import ru.samsebemehanik.catalog.repository.projection.ComponentRelationFullRow;
 import ru.samsebemehanik.catalog.service.OutboxService.AutoComponentStateSnapshot;
 
 @Service
 public class AutoComponentServiceImpl implements AutoComponentService {
+
+    private static final Logger log = LoggerFactory.getLogger(AutoComponentServiceImpl.class);
 
     private final AutoComponentRepository autoComponentRepository;
     private final ComponentEventProducer componentEventProducer;
@@ -148,6 +156,38 @@ public class AutoComponentServiceImpl implements AutoComponentService {
                 componentPage.getTotalElements(),
                 componentPage.getTotalPages()
         );
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public SearchResponse searchByName(String query, int limit, int offset) {
+        String normalizedQuery = query == null ? "" : query.trim();
+        if (normalizedQuery.length() < 2) {
+            throw new IllegalArgumentException("query must contain at least 2 characters");
+        }
+        if (limit < 1 || limit > 50) {
+            throw new IllegalArgumentException("limit must be between 1 and 50");
+        }
+        if (offset < 0) {
+            throw new IllegalArgumentException("offset must be greater than or equal to 0");
+        }
+
+        long total = autoComponentRepository.countByNameContainingIgnoreCase(normalizedQuery);
+        OffsetLimitPageable pageable = new OffsetLimitPageable(offset, limit, Sort.by(Sort.Direction.ASC, "name"));
+        List<SearchItem> items = autoComponentRepository.findByNameContainingIgnoreCase(normalizedQuery, pageable).stream()
+                .map(component -> new SearchItem(component.getId(), component.getName(), component.getDescription()))
+                .toList();
+
+        if (total > 0 && items.isEmpty()) {
+            log.warn("Search returned empty items despite total > 0; query='{}', limit={}, offset={}, total={}",
+                    normalizedQuery, limit, offset, total);
+        } else {
+            log.info("Search completed; query='{}', limit={}, offset={}, total={}, items={}",
+                    normalizedQuery, limit, offset, total, items.size());
+        }
+
+        boolean hasMore = total > (long) offset + items.size();
+        return new SearchResponse(total, hasMore, items);
     }
 
     @Override
